@@ -9,6 +9,18 @@ import APP_CSS from './data/App.css?raw';
 
 /* ====== CONTENU INJECTÉ ====== */
 const QUESTIONS = [{"q": "Dans le processus forward (Éq. 1), à quoi sert le facteur \\(\\sqrt{1-\\beta_t}\\) appliqué à \\(x_{t-1}\\) ?", "options": ["À accélérer les calculs vectoriels sur GPU.", "À contenir la variance globale du signal afin d'éviter son explosion asymptotique au fil des étapes.", "À augmenter la profondeur effective du réseau de neurones."], "correct": 1}, {"q": "Quel est l'avantage principal du trick de reparamétrisation (Éq. 2) pour l'entraînement ?", "options": ["Il réduit la taille du modèle de moitié en supprimant les couches intermédiaires.", "Il impose une distribution uniforme au bruit pour stabiliser le gradient.", "Il permet d'obtenir \\(x_t\\) directement depuis \\(x_0\\) en \\(\\mathcal{O}(1)\\), sans dérouler les 1000 étapes de bruitage."], "correct": 2}, {"q": "Que vaut approximativement \\(\\bar{\\alpha}_t\\) à la dernière itération (\\(t = 999\\)) ?", "options": ["Une valeur proche de 1 : le signal original est quasi-intégralement préservé.", "Exactement 0,5 : signal et bruit sont à parts égales.", "Une valeur tendant vers 0 : le bruit blanc gaussien domine totalement."], "correct": 2}, {"q": "Quel est l'objectif prédictif du modèle \\(\\epsilon_\\theta\\) lors de la minimisation de la fonction de perte (Éq. 3) ?", "options": ["Estimer directement la courbe de consommation sans bruit \\(x_0\\).", "Identifier le vecteur de bruit gaussien \\(\\epsilon\\) injecté lors de la corruption forward.", "Prédire les pas de temps futurs à partir de la série temporelle brute."], "correct": 1}, {"q": "Dans le mécanisme d'auto-attention, pourquoi divise-t-on le produit \\(QK^\\top\\) par \\(\\sqrt{d_k}\\) ?", "options": ["Pour normaliser les poids entre 0 et 1 avant la softmax, indépendamment de la séquence.", "Pour éviter que les scores ne croissent avec la dimension et saturent la softmax, ce qui tuerait les gradients.", "Pour réduire le coût quadratique de l'attention à un coût linéaire."], "correct": 1}, {"q": "Quelle est la différence fondamentale entre le champ réceptif d'un U-Net convolutif et celui d'un Transformer ?", "options": ["Le U-Net a un champ réceptif global dès la première couche grâce aux skip-connections.", "Le Transformer dispose d'un champ réceptif global dès la première couche, là où le U-Net ne l'acquiert que progressivement via empilement et pooling.", "Les deux architectures ont un champ réceptif identique ; seul le coût de calcul diffère."], "correct": 1}, {"q": "Dans l'encodage positionnel (Éq. 4), à quoi correspondent les dimensions de haute fréquence (indices \\(i\\) faibles) ?", "options": ["Elles encodent le contexte global (matin vs soir) grâce à des oscillations lentes.", "Elles oscillent vite pour différencier des patches temporellement proches (ex. 10h de 11h).", "Elles encodent l'amplitude maximale observée (13 325 kWh) pour calibrer la normalisation."], "correct": 1}, {"q": "Dans l'adaLN-Zero (Éq. 5), quelle est la conséquence directe d'initialiser \\(\\alpha = 0\\) en début d'entraînement ?", "options": ["Le bloc se comporte comme une identité (\\(x_{l+1} = x_l\\)), stabilisant les gradients dès les premières itérations.", "Le bruit résiduel du vecteur latent est effacé préventivement.", "L'attention multi-têtes est désactivée pour économiser de la mémoire GPU."], "correct": 0}, {"q": "Lors du reverse process (Éq. 6), pourquoi ajoute-t-on le terme stochastique \\(\\sigma_t z\\) à chaque étape (sauf la dernière) ?", "options": ["Pour compenser la perte d'énergie due à la soustraction itérative du bruit estimé.", "Pour forcer le modèle à explorer toutes les étapes forward en sens inverse.", "Pour prévenir le lissage excessif et conserver les variations asymétriques propres aux charges électriques (dynamique de Langevin)."], "correct": 2}, {"q": "Pourquoi l'algorithme de génération utilise-t-il les poids EMA plutôt que les poids d'entraînement bruts ?", "options": ["Les poids EMA sont plus légers en mémoire car ils fusionnent les couches redondantes.", "L'EMA filtre la variance due aux batchs atypiques et représente la tendance consolidée de ~1000 itérations, produisant des courbes générées plus stables.", "Les poids bruts sont réservés à l'inférence conditionnelle sur de nouvelles données RTE."], "correct": 1}];
+const EXPLANATIONS = [
+  "Le facteur garde l'energie du signal sous controle pendant que le bruit est ajoute progressivement.",
+  "La reparametrisation permet de calculer directement n'importe quel x_t depuis x_0, ce qui rend l'entrainement beaucoup plus efficace.",
+  "A la fin du bruitage, alpha barre est presque nul : le signal initial a quasiment disparu dans le bruit gaussien.",
+  "Le modele apprend a retrouver le bruit ajoute, car cette cible est plus stable que la reconstruction directe de la courbe propre.",
+  "Sans la division par racine de d_k, les scores d'attention deviennent trop grands et la softmax peut saturer.",
+  "L'attention du Transformer met tous les tokens en relation tout de suite ; le U-Net construit ce contexte global plus progressivement.",
+  "Les hautes frequences changent vite, elles servent donc a distinguer des positions temporelles proches.",
+  "Avec alpha initialise a zero, la branche residuelle est neutre au depart : le bloc commence comme une identite stable.",
+  "Le terme aleatoire conserve de la diversite dans la generation et evite une courbe trop lissee.",
+  "L'EMA lisse les variations des poids d'entrainement et donne souvent une generation plus stable."
+];
 
 /* ====== KaTeX (chargé à la volée depuis CDN) ====== */
 let katexPromise = null;
@@ -59,6 +71,89 @@ function useKatex(ref, dep) {
   }, [dep]);
 }
 
+function useInteractiveParallax(view) {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    const root = document.documentElement;
+    let raf = 0;
+
+    const updateScrollParallax = () => {
+      raf = 0;
+      const viewportCenter = window.innerHeight / 2;
+      const items = document.querySelectorAll(".parallax-item");
+      items.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const distance = rect.top + rect.height / 2 - viewportCenter;
+        const depth = Number(item.dataset.depth || 1);
+        const y = Math.max(-18, Math.min(18, -distance * 0.018 * depth));
+        item.style.setProperty("--parallax-y", `${y.toFixed(2)}px`);
+      });
+      if (view === "intro") {
+        root.style.setProperty("--intro-scroll-y", `${Math.min(window.scrollY * 0.08, 34).toFixed(2)}px`);
+      }
+    };
+
+    const requestScrollUpdate = () => {
+      if (!raf) raf = window.requestAnimationFrame(updateScrollParallax);
+    };
+
+    let observer = null;
+
+    const decorateScrollItems = () => {
+      document.querySelectorAll(".parallax-item").forEach((item) => item.classList.remove("parallax-item"));
+      document.querySelectorAll(".scroll-fade").forEach((item) => item.classList.remove("scroll-fade", "is-visible"));
+      if (view === "cours") {
+        document
+          .querySelectorAll(".course-scope header, .course-scope section, .course-scope .deep-dive, .course-scope figure")
+          .forEach((item, index) => {
+            item.classList.add("parallax-item");
+            item.classList.add("scroll-fade");
+            item.dataset.depth = index % 3 === 0 ? "0.7" : index % 3 === 1 ? "1" : "1.25";
+          });
+      }
+      if (view === "histoire") {
+        document
+          .querySelectorAll(".story-scope header.hero, .story-scope .chap, .story-scope .card, .story-scope .eq, .story-scope .note, .story-scope blockquote")
+          .forEach((item, index) => {
+            item.classList.add("parallax-item");
+            item.classList.add("scroll-fade");
+            item.dataset.depth = index % 2 === 0 ? "0.75" : "1.15";
+          });
+      }
+      if (observer) observer.disconnect();
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
+        });
+      }, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+      document.querySelectorAll(".scroll-fade").forEach((item) => observer.observe(item));
+      requestScrollUpdate();
+    };
+
+    const timeout = window.setTimeout(decorateScrollItems, 60);
+    window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+    window.addEventListener("resize", requestScrollUpdate);
+    requestScrollUpdate();
+
+    return () => {
+      window.clearTimeout(timeout);
+      if (raf) window.cancelAnimationFrame(raf);
+      if (observer) observer.disconnect();
+      window.removeEventListener("scroll", requestScrollUpdate);
+      window.removeEventListener("resize", requestScrollUpdate);
+      document.querySelectorAll(".parallax-item").forEach((item) => {
+        item.classList.remove("parallax-item");
+        item.style.removeProperty("--parallax-y");
+      });
+      document.querySelectorAll(".scroll-fade").forEach((item) => item.classList.remove("scroll-fade", "is-visible"));
+      root.style.removeProperty("--intro-scroll-y");
+    };
+  }, [view]);
+}
+
 
 /* ====== Barre de navigation ====== */
 function TopBar({ view, go }) {
@@ -78,7 +173,7 @@ function TopBar({ view, go }) {
           <span className="topbar-sep" />
           <div className="topbar-brand">
             <span className="topbar-bt">BT</span>
-            <span className="topbar-author">Billy Thomont</span>
+            <span className="topbar-author"><span className="author-firstname">Billy</span> <span className="author-lastname">Thomont</span></span>
           </div>
         </div>
         <nav className="seg">
@@ -107,12 +202,11 @@ function Intro({ go }) {
         <div className="author-block fade" style={{ animationDelay: "0ms" }}>
           <div className="bt-mono">BT</div>
           <div className="author-info">
-            <span className="author-name">Billy Thomont</span>
+            <span className="author-name"><span className="author-firstname">Billy</span> <span className="author-lastname">Thomont</span></span>
             <span className="author-role">Thèse de doctorat · Université de La Réunion · EnergyLab</span>
+            <span className="author-supervisors">Encadrants : Cedric Damour · Dominique Grondin · Michel Benne</span>
           </div>
         </div>
-
-        <p className="intro-kicker fade" style={{ animationDelay: "70ms" }}>Diffusion Transformer pour séries électriques</p>
 
         <h1 className="intro-title fade" style={{ animationDelay: "130ms" }}>
           Diffusion<br /><em>Transformer</em>
@@ -273,6 +367,11 @@ function Quiz({ go }) {
                   <div className={"q-feedback " + (picked === q.correct ? "fb-ok" : "fb-no")}>
                     {picked === q.correct ? "Bonne réponse." : "Réponse incorrecte."}
                   </div>
+                  {picked !== q.correct && (
+                    <div className="q-explain">
+                      <strong>Pourquoi ?</strong> {EXPLANATIONS[idx]}
+                    </div>
+                  )}
                   <button className="q-next" onClick={next}>
                     {idx + 1 < total ? "Question suivante" : "Voir le résultat"} <ArrowRight size={17} />
                   </button>
@@ -334,6 +433,7 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
     window.localStorage.setItem("theme", theme);
   }, [theme]);
+  useInteractiveParallax(view);
 
   return (
     <div className="app-root">
