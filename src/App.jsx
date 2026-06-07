@@ -238,6 +238,12 @@ function Intro({ go }) {
           Diffusion<br /><em>Transformer</em>
         </h1>
 
+        <div className="motion-divider electric-divider fade" style={{ animationDelay: "190ms" }} aria-hidden="true">
+          <span className="electric-line" />
+          <span className="electric-core" />
+          <span className="electric-line" />
+        </div>
+
         <p className="intro-sub fade" style={{ animationDelay: "240ms" }}>
           Un module interactif pour comprendre le bruitage, le débruitage, l'attention et la génération de séries de consommation électrique synthétiques.
         </p>
