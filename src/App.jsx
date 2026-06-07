@@ -22,6 +22,32 @@ const EXPLANATIONS = [
   "L'EMA lisse les variations des poids d'entrainement et donne souvent une generation plus stable."
 ];
 
+const ROCKET_ASCII = String.raw`
+              /\              
+             /  \             
+            /____\            
+           /|    |\           
+          /_|_()_|_\          
+            |    |            
+            |BILLY           
+            | DiT|            
+           /|____|\           
+          /_/    \_\          
+             /\/\             
+            /_\/_\            
+
+        .-~~~~~~~~~~-.        
+     .-(    SMOKE     )-.     
+   .'   (   CLOUDS   )   '.   
+  (   .-~~~~~~~~~~~~~~-.   )  
+   '-(__________________)-'   
+`;
+
+if (typeof window !== "undefined") {
+  console.log("%c" + ROCKET_ASCII, "color:#f8fafc;font-family:Consolas, Monaco, monospace;font-size:13px;font-weight:700;line-height:1.18");
+  console.log("%cBilly Thomont · DiT launch sequence ready", "color:#60a5fa;font-weight:800");
+}
+
 /* ====== KaTeX (chargé à la volée depuis CDN) ====== */
 let katexPromise = null;
 function loadKatex() {

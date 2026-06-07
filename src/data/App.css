@@ -118,8 +118,8 @@ html,body,#root{min-height:100%;margin:0}body{background:var(--bg-color);color:v
 .author-supervisors{font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:800;color:#dbeafe;letter-spacing:.02em;line-height:1.35}
 [data-theme='light'] .author-supervisors{color:#1e40af}
 .bt-mono,.topbar-bt{background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 58%,#6d4aff 100%)!important;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 16px 34px -22px rgba(29,78,216,.9)}
-.author-firstname,.author-lastname{display:inline-block;background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 58%,#6d4aff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-[data-theme='light'] .author-firstname,[data-theme='light'] .author-lastname{background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 58%,#6d4aff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.author-firstname,.author-lastname{display:inline-block;background:linear-gradient(135deg,#bfdbfe 0%,#60a5fa 40%,#818cf8 76%,#c4b5fd 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 8px rgba(96,165,250,.22))}
+[data-theme='light'] .author-firstname,[data-theme='light'] .author-lastname{background:linear-gradient(135deg,#06112b 0%,#123b9c 42%,#2454d8 72%,#4f46e5 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 1px rgba(15,23,42,.12))}
 [data-theme='light'] .bt-mono,[data-theme='light'] .topbar-bt{background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 58%,#6d4aff 100%)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 16px 34px -24px rgba(29,78,216,.75)}
 
 /* Interactive parallax */
@@ -135,3 +135,14 @@ html,body,#root{min-height:100%;margin:0}body{background:var(--bg-color);color:v
 .scroll-fade{opacity:0;filter:blur(8px);transition:opacity .7s cubic-bezier(.16,1,.3,1),filter .7s cubic-bezier(.16,1,.3,1),transform .16s linear}
 .scroll-fade.is-visible{opacity:1;filter:blur(0)}
 @media(prefers-reduced-motion:reduce){.intro-bg,.intro-inner,.intro::after,.parallax-item,.scroll-fade{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}}
+
+/* Polished light choice cards */
+[data-theme='light'] .choice{align-items:center;text-align:center;background:#fff;border-color:rgba(15,23,42,.11);box-shadow:0 18px 42px -34px rgba(15,23,42,.26);padding:34px 34px 30px}
+[data-theme='light'] .choice::after{display:none}
+[data-theme='light'] .choice:hover{transform:translateY(-3px);border-color:rgba(37,99,235,.20);background:#fff;box-shadow:0 24px 54px -38px rgba(15,23,42,.32)}
+[data-theme='light'] .choice-top h3{color:#0f172a}
+[data-theme='light'] .choice-desc{color:#334155}
+[data-theme='light'] .choice-top{align-items:center;gap:15px}
+[data-theme='light'] .choice-ico{width:56px;height:56px;border-radius:16px;background:#f3f7ff!important;color:#1d4ed8;box-shadow:inset 0 0 0 1px rgba(37,99,235,.13)!important}
+[data-theme='light'] .c-story .choice-ico{background:#f5f3ff!important;color:#6d4aff;box-shadow:inset 0 0 0 1px rgba(109,74,255,.13)!important}
+[data-theme='light'] .choice-foot{font-weight:900;justify-content:center}
