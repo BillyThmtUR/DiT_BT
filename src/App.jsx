@@ -104,7 +104,6 @@ function Intro({ go }) {
       <div className="intro-bg" />
       <div className="intro-inner">
 
-        {/* Signature auteur */}
         <div className="author-block fade" style={{ animationDelay: "0ms" }}>
           <div className="bt-mono">BT</div>
           <div className="author-info">
@@ -113,18 +112,23 @@ function Intro({ go }) {
           </div>
         </div>
 
-        {/* Titre principal */}
-        <h1 className="intro-title fade" style={{ animationDelay: "110ms" }}>
+        <p className="intro-kicker fade" style={{ animationDelay: "70ms" }}>Diffusion Transformer pour séries électriques</p>
+
+        <h1 className="intro-title fade" style={{ animationDelay: "130ms" }}>
           Diffusion<br /><em>Transformer</em>
         </h1>
 
-        <p className="intro-ask fade" style={{ animationDelay: "400ms" }}>
-          Par où voulez-vous commencer ?
+        <p className="intro-sub fade" style={{ animationDelay: "240ms" }}>
+          Un module interactif pour comprendre le bruitage, le débruitage, l'attention et la génération de séries de consommation électrique synthétiques.
         </p>
 
-        {/* Cartes de choix */}
+        <p className="intro-ask fade" style={{ animationDelay: "390ms" }}>
+          Choisissez votre parcours
+        </p>
+
         <div className="choice-grid">
           <button className="choice c-course fade" style={{ animationDelay: "460ms" }} onClick={() => go("cours")}>
+            <div className="choice-glow" />
             <div className="choice-top">
               <div className="choice-ico"><BookOpen size={22} /></div>
               <h3>Le Cours</h3>
@@ -134,6 +138,7 @@ function Intro({ go }) {
           </button>
 
           <button className="choice c-story fade" style={{ animationDelay: "530ms" }} onClick={() => go("histoire")}>
+            <div className="choice-glow" />
             <div className="choice-top">
               <div className="choice-ico"><Feather size={22} /></div>
               <h3>L'Histoire illustrée</h3>
@@ -143,7 +148,6 @@ function Intro({ go }) {
           </button>
         </div>
 
-        {/* CTA quiz */}
         <button className="quiz-cta fade" style={{ animationDelay: "600ms" }} onClick={() => go("quiz")}>
           <ClipboardCheck size={17} />
           <span>Contrôle des connaissances — 10 questions</span>
@@ -227,71 +231,72 @@ function Quiz({ go }) {
 
   let rank;
   if (score === total) rank = { t: "Niveau : Expert", c: "#60a5fa", d: "Maîtrise parfaite — processus de Markov, attention, adaLN et dynamique de génération n'ont plus de secrets." };
-  else if (score >= 7) rank = { t: "Niveau : Avancé", c: "#fff", d: "Solide compréhension de l'architecture. Quelques subtilités mathématiques méritent une relecture ciblée." };
-  else if (score >= 4) rank = { t: "Niveau : Intermédiaire", c: "#a78bfa", d: "Les fondamentaux sont posés. Reprendre les sections sur l'attention, l'adaLN et la dynamique de Langevin." };
-  else rank = { t: "Niveau : Fondations", c: "#94a3b8", d: "Une relecture approfondie des concepts forward/reverse, du mécanisme d'attention et de l'EMA est recommandée." };
+  else if (score >= 7) rank = { t: "Niveau : Solide", c: "#34d399", d: "Très bonne compréhension. Quelques détails techniques restent à consolider, mais la structure globale est acquise." };
+  else if (score >= 4) rank = { t: "Niveau : En construction", c: "#fbbf24", d: "Les bases sont là. Relisez les sections sur le forward process, l'attention et l'EMA pour solidifier l'ensemble." };
+  else rank = { t: "Niveau : À reprendre", c: "#f87171", d: "Pas grave : le Diffusion Transformer n'est pas une promenade au Barachois. Reprenez le cours, puis retentez." };
 
   return (
-    <div className="quiz-wrap" ref={ref}>
-      <div className="quiz-card">
+    <div className="quiz-page">
+      <div className="quiz-wrap" ref={ref}>
         <div className="quiz-head">
-          <span className="quiz-eyebrow">Contrôle des connaissances</span>
+          <div className="quiz-eyebrow">Contrôle des connaissances</div>
           <h2>Module d'Évaluation DiT</h2>
           <p className="quiz-sub">Validez votre compréhension des concepts mathématiques abordés.</p>
-          <div className="quiz-progress"><div style={{ width: ((done ? total : idx) / total) * 100 + "%" }} /></div>
+          <div className="quiz-progress"><div style={{ width: `${done ? 100 : ((idx) / total) * 100}%` }} /></div>
         </div>
 
-        {!done && (
-          <div className="quiz-q" key={idx}>
-            <span className="q-count">Question {idx + 1} / {total}</span>
-            <h3 className="q-text">{q.q}</h3>
-            <div className="q-opts">
-              {q.options.map((opt, i) => {
-                let cls = "q-opt";
-                if (picked !== null) {
-                  if (i === q.correct) cls += " q-correct";
-                  else if (i === picked) cls += " q-wrong";
-                  else cls += " q-dim";
-                }
-                return (
-                  <button key={i} className={cls} onClick={() => pick(i)} disabled={picked !== null}>
-                    <span className="q-letter">{String.fromCharCode(65 + i)}</span>
-                    <span className="q-label">{opt}</span>
-                    {picked !== null && i === q.correct && <Check size={18} className="q-ico" />}
-                    {picked !== null && i === picked && i !== q.correct && <X size={18} className="q-ico" />}
-                  </button>
-                );
-              })}
-            </div>
-            {picked !== null && (
-              <div className="q-feedback">
-                {picked === q.correct
-                  ? <span className="fb-ok">Réponse correcte.</span>
-                  : <span className="fb-no">Réponse incorrecte. La bonne réponse est mise en évidence.</span>}
+        <div className="quiz-card">
+          {!done ? (
+            <div className="quiz-q" key={idx}>
+              <div className="q-count">Question {idx + 1} / {total}</div>
+              <h3 className="q-text">{q.q}</h3>
+              <div className="q-opts">
+                {q.options.map((opt, i) => {
+                  const selected = picked === i;
+                  const isCorrect = i === q.correct;
+                  let cls = "q-opt";
+                  if (picked !== null) {
+                    if (isCorrect) cls += " q-correct";
+                    else if (selected) cls += " q-wrong";
+                    else cls += " q-dim";
+                  }
+                  return (
+                    <button key={i} className={cls} onClick={() => pick(i)} disabled={picked !== null}>
+                      <span className="q-letter">{String.fromCharCode(65 + i)}</span>
+                      <span className="q-label">{opt}</span>
+                      {picked !== null && isCorrect && <Check size={18} className="q-ico" />}
+                      {picked !== null && selected && !isCorrect && <X size={18} className="q-ico" />}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-            {picked !== null && (
-              <button className="q-next" onClick={next}>
-                {idx + 1 < total ? "Suivant" : "Terminer l'évaluation"}
-              </button>
-            )}
-          </div>
-        )}
-
-        {done && (
-          <div className="quiz-result">
-            <h3 style={{ color: rank.c }}>{rank.t}</h3>
-            <p className="rank-desc">{rank.d}</p>
-            <div className="score-box">
-              <span className="score-label">Score final</span>
-              <span className="score-val">{score} / {total}</span>
+              {picked !== null && (
+                <>
+                  <div className={"q-feedback " + (picked === q.correct ? "fb-ok" : "fb-no")}>
+                    {picked === q.correct ? "Bonne réponse." : "Réponse incorrecte."}
+                  </div>
+                  <button className="q-next" onClick={next}>
+                    {idx + 1 < total ? "Question suivante" : "Voir le résultat"} <ArrowRight size={17} />
+                  </button>
+                </>
+              )}
             </div>
-            <div className="result-actions">
-              <button className="q-next" onClick={restart}><RotateCcw size={16} /> Reprendre</button>
-              <button className="ghost-btn" onClick={() => go("cours")}>Revoir le cours</button>
+          ) : (
+            <div className="quiz-result">
+              <div className="quiz-eyebrow">Résultat final</div>
+              <h3 style={{ color: rank.c }}>{rank.t}</h3>
+              <p className="rank-desc">{rank.d}</p>
+              <div className="score-box">
+                <span className="score-label">Score</span>
+                <span className="score-val">{score} / {total}</span>
+              </div>
+              <div className="result-actions">
+                <button className="q-next" onClick={restart}><RotateCcw size={16} /> Recommencer</button>
+                <button className="ghost-btn" onClick={() => go("cours")}><ArrowLeft size={16} /> Retour au cours</button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -330,8 +335,8 @@ export default function App() {
 
   return (
     <div className="app-root">
-      <button onClick={toggleTheme} className="theme-toggle">
-        Passer en mode {theme === 'light' ? 'sombre' : 'clair'}
+      <button onClick={toggleTheme} className="theme-toggle" aria-label="Changer de thème">
+        {theme === 'light' ? 'Mode sombre' : 'Mode clair'}
       </button>
       <style>{APP_CSS}</style>
       {view !== "intro" && <TopBar view={view} go={go} />}
