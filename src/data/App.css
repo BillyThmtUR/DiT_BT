@@ -21,3 +21,50 @@ html,body,#root{min-height:100%;margin:0}body{background:var(--bg-color);color:v
 @media(max-width:720px){.choice-grid{grid-template-columns:1fr}.theme-toggle{right:12px;bottom:12px}.topbar-inner{flex-direction:column;align-items:stretch}.seg{justify-content:center}.topbar-left{justify-content:center}.choice{min-height:240px;padding:30px 24px}.quiz-card{padding:24px 18px}.q-opt{align-items:flex-start}.intro-inner{padding-top:54px}}
 @media(max-width:600px){.endcta{flex-direction:column;text-align:center}.endcta>div{flex:none}.endcta button{width:100%;justify-content:center}.author-block{align-items:flex-start}.quiz-cta{border-radius:18px;line-height:1.35}}
 .story-scope footer::after{content:" — Billy Thomont";font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:#7c3aed}
+
+/* Theme-aware overrides */
+[data-theme='light'] .intro{background:#eef5ff}
+[data-theme='light'] .intro-bg{background:radial-gradient(ellipse 900px 520px at 50% -10%,rgba(59,130,246,.20),transparent 62%),radial-gradient(ellipse 720px 520px at 98% 20%,rgba(139,92,246,.12),transparent 66%),radial-gradient(ellipse 900px 620px at 4% 95%,rgba(16,185,129,.10),transparent 60%),linear-gradient(180deg,#f8fbff 0%,#eef5ff 58%,#e7eef8 100%)}
+[data-theme='light'] .intro-bg::before{background-image:linear-gradient(rgba(15,23,42,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.055) 1px,transparent 1px)}
+[data-theme='light'] .intro-bg::after{background:linear-gradient(90deg,transparent,rgba(37,99,235,.45),rgba(124,58,237,.35),transparent);box-shadow:0 0 40px rgba(37,99,235,.25)}
+[data-theme='light'] .intro-inner{color:#0f172a}
+[data-theme='light'] .author-block{background:rgba(255,255,255,.74);border-color:rgba(15,23,42,.10);box-shadow:0 24px 70px -52px rgba(37,99,235,.65)}
+[data-theme='light'] .author-name,[data-theme='light'] .intro-ask{color:#0f172a}
+[data-theme='light'] .author-role{color:#526176}
+[data-theme='light'] .intro-kicker{color:#2563eb}
+[data-theme='light'] .intro-title{background:linear-gradient(155deg,#0f172a 10%,#1d4ed8 46%,#7c3aed 74%,#047857 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme='light'] .intro-sub{color:#475569}
+[data-theme='light'] .choice{color:#0f172a;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,250,252,.86));border-color:rgba(15,23,42,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 24px 70px -48px rgba(15,23,42,.42)}
+[data-theme='light'] .choice::before{background:radial-gradient(circle at 50% 0%,rgba(59,130,246,.18),transparent 38%);opacity:1}
+[data-theme='light'] .choice-top h3{color:#0f172a}
+[data-theme='light'] .choice-desc{color:#334155}
+[data-theme='light'] .c-course .choice-ico{background:#dbeafe;color:#2563eb;box-shadow:0 0 0 1px rgba(37,99,235,.16)}
+[data-theme='light'] .c-story .choice-ico{background:#ede9fe;color:#7c3aed;box-shadow:0 0 0 1px rgba(124,58,237,.16)}
+[data-theme='light'] .c-course .choice-foot{color:#2563eb}
+[data-theme='light'] .c-story .choice-foot{color:#7c3aed}
+
+[data-theme='dark'] .course-scope{background:#07111f!important;color:#e5edf8!important}
+[data-theme='dark'] .course-scope .bg-white,[data-theme='dark'] .course-scope section,[data-theme='dark'] .course-scope article{background-color:#0f172a!important;color:#e5edf8!important;border-color:rgba(255,255,255,.10)!important}
+[data-theme='dark'] .course-scope .text-slate-900,[data-theme='dark'] .course-scope .text-slate-800,[data-theme='dark'] .course-scope .text-gray-900,[data-theme='dark'] .course-scope .text-gray-800{color:#f8fafc!important}
+[data-theme='dark'] .course-scope .text-slate-700,[data-theme='dark'] .course-scope .text-slate-600,[data-theme='dark'] .course-scope .text-gray-700,[data-theme='dark'] .course-scope .text-gray-600{color:#cbd5e1!important}
+[data-theme='dark'] .course-scope .bg-slate-50,[data-theme='dark'] .course-scope .bg-gray-50,[data-theme='dark'] .course-scope .bg-blue-50{background-color:#111c31!important}
+[data-theme='dark'] .endcta-wrap{background:#07111f}
+[data-theme='light'] .endcta-wrap{background:#f7f9fc}
+
+[data-theme='dark'] .quiz-page{background:linear-gradient(180deg,#07111f 0%,#060d1a 100%);color:#f1f5f9}
+[data-theme='dark'] .quiz-card{background:#0f172a;border-color:rgba(255,255,255,.10);box-shadow:0 28px 75px -52px rgba(0,0,0,.85)}
+[data-theme='dark'] .quiz-head,[data-theme='dark'] .q-text,[data-theme='dark'] .quiz-result{color:#f8fafc}
+[data-theme='dark'] .quiz-sub,[data-theme='dark'] .rank-desc{color:#b6c2d4}
+[data-theme='dark'] .quiz-progress{background:#1e293b}
+[data-theme='dark'] .q-opt{background:#111c31;border-color:rgba(255,255,255,.10);color:#dbeafe}
+[data-theme='dark'] .q-opt:hover:not(:disabled){background:#16243a;border-color:rgba(96,165,250,.45)}
+[data-theme='dark'] .q-letter{background:#1e293b;color:#cbd5e1}
+[data-theme='dark'] .score-box{background:#111c31;border-color:rgba(255,255,255,.10)}
+[data-theme='dark'] .ghost-btn{background:#111c31;border-color:rgba(255,255,255,.10);color:#cbd5e1}
+[data-theme='dark'] .ghost-btn:hover{background:#1e293b;color:#f8fafc}
+
+.choice{isolation:isolate}
+.choice-top,.choice-desc,.choice-foot{z-index:1}
+.choice-desc{font-weight:600;text-wrap:balance}
+.choice-top h3{text-wrap:balance}
+@media(max-width:720px){.choice{border-radius:22px;gap:14px}.choice-desc{font-size:15px;line-height:1.62}.choice-top h3{font-size:26px}}

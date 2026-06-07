@@ -322,7 +322,10 @@ function EndCTA({ go }) {
 export default function App() {
   const [view, setView] = useState("intro");
   const go = (v) => { window.scrollTo(0, 0); setView(v); };
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "dark";
+    return window.localStorage.getItem("theme") || "dark";
+  });
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -331,6 +334,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage.setItem("theme", theme);
   }, [theme]);
 
   return (
