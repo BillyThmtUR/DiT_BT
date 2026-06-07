@@ -55,4 +55,4 @@ dit-thomont/
 
 ---
 
-*Billy Thomont · Université de La Réunion · EnergyLab · 2024–2025*
+*Billy Thomont · Université de La Réunion · EnergyLab · 2025–2026*
