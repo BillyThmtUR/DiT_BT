@@ -1,0 +1,399 @@
+<header class="hero fade">
+    <div class="wrap">
+        <div class="kicker">Une fable du Diffusion Transformer</div>
+        <h1>Le Jour qui<br>n'existait pas</h1>
+        <div class="sub">Comment on apprend à une machine à peindre une journée d'électricité à partir de pur
+            brouillard</div>
+        <div class="legend"> <span><i class="dot" style="background:var(--sig)"></i>Signal — la donnée</span>
+            <span><i class="dot" style="background:var(--noise)"></i>Bruit — l'aléa</span> <span><i class="dot"
+                    style="background:var(--time)"></i>Temps — les étapes</span> <span><i class="dot"
+                    style="background:var(--model)"></i>Modèle — les poids</span>
+        </div>
+    </div>
+</header>
+<main class="wrap"> <!-- PROLOGUE -->
+    <section class="chap"><span class="num">PROLOGUE</span>
+        <h2>Le royaume qui respire</h2>
+    </section>
+    <p class="lead">Il était une fois un royaume nommé <strong>Réseau</strong>, qui couvrait toute
+        l'Île-de-France et qui, comme tous les êtres vivants, respirait. Sa respiration n'était pas faite d'air mais
+        d'électricité&nbsp;: creuse et lente vers 4h du matin quand le royaume dort, profonde et puissante vers 19h
+        quand chacun rentre, allume, cuisine, chauffe. À son inspiration la plus forte, le royaume engloutissait <span
+            class="v sig">13&nbsp;325&nbsp;kWh</span> en une seule demi-heure.</p>
+    <p>Pour garder la mémoire de
+        ces journées, les scribes du royaume dessinaient chaque jour une courbe&nbsp;: <strong>48 points</strong>, un
+        toutes les demi-heures, du premier souffle de minuit au dernier de la nuit suivante. Une de ces courbes,
+        parfaitement réelle, sera notre héroïne. Appelons-la <span class="v sig">x₀</span> — «&nbsp;le Jour
+        Zéro&nbsp;», le jour vrai, celui d'où tout commence.</p>
+    <div class="card s">
+        <div class="sym">x₀
+        </div>
+        <div>
+            <h4>x₀ — la Vraie Journée</h4>
+            <p>Une courbe de consommation réelle (48 demi-heures, données RTE). C'est le <em>signal pur</em>, la vérité
+                de départ. Avant le voyage, on la normalise (valeurs ramenées entre −1 et 1) pour calmer les calculs.
+            </p>
+        </div>
+    </div>
+    <blockquote>« Pour apprendre à recréer un jour, il faut d'abord apprendre à le détruire. »
+    </blockquote> <!-- CH 1 — FORWARD -->
+    <section class="chap"><span class="num">CHAPITRE I — LE
+            BRUITAGE</span>
+        <h2>La longue nuit du brouillard</h2>
+    </section>
+    <p>Dans le royaume vivait une créature impalpable&nbsp;: <span class="v noise">ε</span>, la
+        <strong>Brume</strong>. Pur hasard, sans forme, tirée d'une loi gaussienne parfaitement neutre — <span class="v
+            noise">ε ~ 𝒩(0, I)</span>&nbsp;: moyenne nulle, aucune préférence, du bruit blanc. Chaque nuit, la Brume
+        venait effacer un peu plus le Jour.
+    </p>
+    <p>Mais elle ne frappait pas d'un coup. Elle suivait une recette,
+        dosée étape par étape. À chaque pas de temps <span class="v tim">t</span>, on ajoutait une petite louche de
+        brume <span class="v noise">βₜ</span>, et — détail crucial — on rétrécissait d'abord ce qui restait du jour
+        précédent <span class="v sig">xₜ₋₁</span> par un facteur <span class="v noise">√(1−βₜ)</span>. Pourquoi
+        rétrécir&nbsp;? Pour que l'énergie totale ne <em>gonfle</em> jamais&nbsp;: on enlève exactement autant de signal
+        qu'on injecte de bruit. Le seau reste plein, mais son contenu change.</p>
+    <div class="eq"> <span class="cap">Équation 1 · un pas de bruitage (chaîne de Markov)</span> <b class="sig">xₜ</b> =
+        √(1−<b class="noise">βₜ</b>) · <b class="sig">xₜ₋₁</b> &nbsp;+&nbsp; √<b class="noise">βₜ</b> · <b
+            class="noise">ε</b> </div>
+    <div class="card n">
+        <div class="sym">ε</div>
+        <div>
+            <h4>ε — la Brume (le bruit)</h4>
+            <p>Bruit blanc gaussien 𝒩(0, I). C'est la matière première de la destruction… et, plus tard, la matière
+                première de la création.</p>
+        </div>
+    </div>
+    <div class="card n">
+        <div class="sym">βₜ</div>
+        <div>
+            <h4>βₜ — la dose de brume (« noise schedule »)</h4>
+            <p>La quantité de bruit injectée à l'étape <span class="v tim">t</span>. Minuscule au début, plus
+                généreuse vers la fin&nbsp;: la recette d'effacement.</p>
+        </div>
+    </div>
+    <p>De cette dose découle son contraire, <span class="v noise">αₜ = 1 − βₜ</span>&nbsp;: la
+        <em>part du jour qui survit</em> à une étape. Et si l'on multiplie toutes ces survies depuis le début, on
+        obtient la mémoire cumulée du Jour&nbsp;: <span class="v noise ov">α</span><span class="v noise">ₜ</span>,
+        «&nbsp;alpha-barre&nbsp;», le produit <span class="v noise">α₁·α₂···αₜ</span>.
+    </p>
+    <div class="card n">
+        <div class="sym"><span class="ov">α</span>ₜ</div>
+        <div>
+            <h4><span class="ov">α</span>ₜ — alpha-barre (la survie cumulée)</h4>
+            <p>Ce qu'il reste du Jour vrai après <span class="v tim">t</span> étapes. Elle décroît, lentement puis
+                irrémédiablement, de presque 1 vers presque 0.</p>
+        </div>
+    </div>
+    <p>Le voyage durait <span class="v tim">T = 1000</span> étapes. À la dernière, <span class="v tim">t =
+            999</span>, la mémoire <span class="v noise ov">α</span><span class="v noise">₉₉₉</span> tendait vers
+        zéro&nbsp;: il ne restait plus rien du Jour vrai, rien que de la Brume pure.
+        La courbe était devenue un chaos parfait, indiscernable de n'importe quel autre chaos. Le royaume, ce soir-là,
+        avait totalement oublié à quoi ressemblait une journée.</p> <!-- CH 2 — REPARAM -->
+    <section class="chap"><span class="num">CHAPITRE II — LE SAUT TEMPOREL</span>
+        <h2>Le raccourci qui défie mille nuits</h2>
+    </section>
+    <p>Voilà l'ennui&nbsp;: pour observer le Jour à l'étape 700, fallait-il vraiment endurer 700 nuits de
+        brume l'une après l'autre&nbsp;? Ce serait épuisant — et pour entraîner notre futur héros, il faudra le faire
+        des millions de fois.</p>
+    <p>Les mathématiciens du royaume découvrirent alors un sortilège merveilleux.
+        Comme additionner deux gaussiennes en redonne une seule, toutes ces nuits successives se résument en <strong>une
+            seule formule</strong>. On peut téléporter le Jour directement à n'importe quelle étape <span class="v
+            tim">t</span>, en temps 𝒪(1), sans dérouler la chaîne&nbsp;:</p>
+    <div class="eq"> <span class="cap">Équation 2 · le trick de reparamétrisation</span> <b class="sig">xₜ</b> =
+        √<b class="noise"><span style="text-decoration:overline">α</span>ₜ</b> · <b class="sig">x₀</b>
+        &nbsp;+&nbsp; √(1−<b class="noise"><span style="text-decoration:overline">α</span>ₜ</b>) · <b
+            class="noise">ε</b> </div>
+    <p>Lisez-la comme une recette de gris&nbsp;: une part <span class="v sig">√<span class="ov">α</span>ₜ</span> de
+        Jour véritable, une part <span class="v noise">√(1−<span class="ov">α</span>ₜ)</span> de Brume, mélangées
+        d'un seul geste. Au début (<span class="v tim">t</span> petit) le mélange est presque tout signal&nbsp;; à la
+        fin, presque tout bruit. Le scribe peut
+        désormais fabriquer, instantanément, un Jour à moitié effacé, à 3&nbsp;% effacé, à 97&nbsp;% effacé — selon le
+        <span class="v tim">t</span> qu'il choisit. C'est ce raccourci qui rend l'entraînement possible.
+    </p>
+    <!-- CH 3 — THE APPRENTICE -->
+    <section class="chap"><span class="num">CHAPITRE III — NAISSANCE DU
+            DEVIN</span>
+        <h2>Un peintre aveugle vient au monde</h2>
+    </section>
+    <p class="lead">C'est ici qu'entre notre héros. On l'appela <span class="v mod">ε_θ</span>, le
+        Devin — un peintre dont la mission n'était pas de peindre le Jour, mais quelque chose de bien plus subtil&nbsp;:
+        <strong>deviner exactement quelle Brume avait été ajoutée</strong>. Montrez-lui une courbe à moitié effacée,
+        dites-lui à quelle étape <span class="v tim">t</span> elle se trouve, et il doit pointer du doigt&nbsp;:
+        «&nbsp;voilà le bruit <span class="v noise">ε</span> qu'on t'a jeté dessus&nbsp;».
+    </p>
+    <p>Son cerveau, ce
+        sont ses <strong>poids</strong> <span class="v mod">θ</span> — quelque 7,6&nbsp;millions de petits boutons
+        réglables. À sa naissance, ils sont tirés au hasard&nbsp;: le Devin est un peintre aveugle qui ne devine rien,
+        qui répond n'importe quoi. Tout l'enjeu de l'histoire sera de tourner patiemment ces millions de boutons jusqu'à
+        ce qu'il voie clair.</p>
+    <div class="card m">
+        <div class="sym">ε_θ</div>
+        <div>
+            <h4>ε_θ — le Devin (le réseau)</h4>
+            <p>Le modèle qui, à partir d'une courbe bruitée <span class="v sig">xₜ</span> et de l'étape <span
+                    class="v tim">t</span>, prédit le bruit <span class="v noise">ε</span> injecté. L'indice <span
+                    class="v mod">θ</span> rappelle qu'il est entièrement défini par ses poids.</p>
+        </div>
+    </div>
+    <div class="card m">
+        <div class="sym">θ</div>
+        <div>
+            <h4>θ — les poids (le savoir)</h4>
+            <p>Les ~7,6 M paramètres réglables du Devin. Au départ aléatoires&nbsp;; l'entraînement, c'est l'art de les
+                ajuster.</p>
+        </div>
+    </div> <!-- CH 4 — INSIDE THE STUDIO -->
+    <section class="chap"><span class="num">CHAPITRE IV
+            — DANS L'ATELIER</span>
+        <h2>L'horloge, le conseil et l'interrupteur</h2>
+    </section>
+    <p>Pour comprendre comment le Devin réfléchit, entrons dans son atelier. La courbe bruitée n'y entre
+        pas brute&nbsp;: on la découpe en morceaux (patchs), puis on projette chaque morceau dans un espace de pensée
+        plus riche, de dimension <span class="v mod">D = 256</span>. C'est là, dans cet espace caché, que toute la
+        réflexion a lieu.</p>
+    <h3 style="font-family:var(--display);font-weight:600;font-size:22px;margin-top:34px">① L'horloge sinusoïdale</h3>
+    <p>Premier problème&nbsp;: un morceau ne sait pas <em>quand</em> il a lieu. Or 8h du matin et 20h, ce n'est pas
+        pareil. On agrafe donc à chaque morceau une <strong>signature temporelle</strong> faite de sinus et de cosinus
+        de fréquences différentes — l'encodage positionnel. Les dimensions de <span class="v time">haute
+            fréquence</span> oscillent vite et distinguent les instants proches (10h de 11h)&nbsp;; les dimensions de
+        <span class="v time">basse fréquence</span> oscillent lentement et donnent le grand contexte (matin contre
+        soir). Une horloge à plusieurs aiguilles, en somme.
+    </p>
+    <h3 style="font-family:var(--display);font-weight:600;font-size:22px;margin-top:34px">② Le conseil
+        (l'auto-attention)</h3>
+    <p>Vient le cœur du Transformer. Chaque instant de la journée se voit poser trois
+        questions, traduites en trois vecteurs&nbsp;: <span class="v mod">Q</span> (ce que je cherche), <span
+            class="v mod">K</span> (ce que j'offre), <span class="v mod">V</span> (ce que je vaux). En comparant les
+        <span class="v mod">Q</span> aux <span class="v mod">K</span> de tout le monde (le produit <span class="v
+            mod">QKᵀ</span>), chaque instant mesure à quel point les autres lui ressemblent ou l'intéressent. On divise
+        ce score par <span class="v mod">√d_k</span> — sinon, en grande dimension, les scores enflent, la softmax
+        sature et les gradients meurent. Puis la softmax transforme tout cela en poids qui somment à 1.
+    </p>
+    <p>La
+        conséquence est spectaculaire&nbsp;: <strong>dès la toute première couche</strong>, le pic de 19h peut
+        «&nbsp;consulter&nbsp;» directement le creux de 4h du matin. Aucune notion de distance ne le freine. Là où
+        l'ancien champion, le <span class="v mod">U-Net</span> convolutif, ne voyait d'abord que ses voisins immédiats
+        et n'élargissait son regard que lentement, couche après couche, le Transformer embrasse toute la journée d'un
+        seul coup d'œil. C'est pour ce regard panoramique qu'il a détrôné l'ancien roi.</p>
+    <div class="note">
+        <b>Q, K, V, d_k —</b> les rouages de l'attention. Q&nbsp;: la requête. K&nbsp;: la clé. V&nbsp;: la valeur.
+        <span class="v mod">d_k</span>&nbsp;: la dimension des clés, dont la racine sert de garde-fou contre
+        l'emballement de la softmax.
+    </div>
+    <h3 style="font-family:var(--display);font-weight:600;font-size:22px;margin-top:34px">③ L'interrupteur prudent
+        (adaLN-Zero)</h3>
+    <p>Mais comment dire au Devin <em>à quelle étape</em> <span class="v tim">t</span> il
+        travaille&nbsp;? On ne le lui crie pas&nbsp;: on s'en sert pour <strong>moduler</strong> chaque bloc. À partir
+        de <span class="v tim">t</span>, le réseau fabrique deux réglages&nbsp;: une mise à l'échelle <span class="v
+            mod">γ</span> (gamma) et un décalage <span class="v mod">β</span> (le shift de l'adaLN — à ne pas
+        confondre avec la dose de brume&nbsp;!). Ils ajustent finement le comportement du bloc selon le niveau de bruit
+        ambiant.</p>
+    <p>Et il y a une astuce de sécurité&nbsp;: une vanne <span class="v mod">α</span> placée en
+        sortie de chaque bloc, <strong>initialisée à zéro</strong>. Au tout début de l'entraînement, le bloc se comporte
+        alors comme une simple identité (<span class="v sig">x</span> ressort tel quel) — rien ne dérape, les
+        gradients restent sages, et le réseau apprend à «&nbsp;ouvrir&nbsp;» progressivement chaque vanne. C'est
+        l'adaLN-<em>Zero</em>&nbsp;: on démarre à zéro pour ne rien casser.</p>
+    <div class="card m">
+        <div class="sym">γ&nbsp;β</div>
+        <div>
+            <h4>γ, β — l'échelle et le décalage (adaLN)</h4>
+            <p>Deux réglages produits à partir de <span class="v tim">t</span> qui modulent chaque bloc selon le
+                niveau de bruit. La vanne <span class="v mod">α=0</span> au départ rend le bloc inoffensif et
+                l'entraînement stable.</p>
+        </div>
+    </div> <!-- CH 5 — THE EXAM -->
+    <section class="chap"><span class="num">CHAPITRE V —
+            L'EXAMEN</span>
+        <h2>La note qui rapetisse</h2>
+    </section>
+    <p>Comment savoir si le Devin progresse&nbsp;? On lui fait passer un examen, des millions de fois. La
+        règle du jeu, à chaque tour&nbsp;:</p>
+    <p>On prend un vrai Jour <span class="v sig">x₀</span>, on tire au
+        sort une étape <span class="v tim">t</span> et une Brume <span class="v noise">ε</span>, on téléporte le
+        Jour à <span class="v sig">xₜ</span> grâce au raccourci. On présente <span class="v sig">xₜ</span> et <span
+            class="v tim">t</span> au Devin, qui propose sa Brume devinée <span class="v mod">ε_θ(xₜ, t)</span>. Sa
+        note&nbsp;: la distance entre la vraie Brume et la sienne — l'erreur quadratique moyenne <span class="v
+            mod">L</span>.</p>
+    <div class="eq"> <span class="cap">Équation 3 · la fonction de perte</span>
+        <b class="mod">L</b> = 𝔼<sub>t,x₀,ε</sub> [ ‖ <b class="noise">ε</b> − <b class="mod">ε_θ</b>(<b
+            class="sig">xₜ</b>, <b class="tim">t</b>) ‖² ]
+    </div>
+    <div class="card m">
+        <div class="sym">
+            L</div>
+        <div>
+            <h4>L — la perte (la note d'erreur)</h4>
+            <p>L'écart au carré entre le bruit réel <span class="v noise">ε</span> et le bruit prédit <span class="v
+                    mod">ε_θ</span>. Plus elle est basse, mieux le Devin voit. Tout l'entraînement vise à la faire
+                fondre.</p>
+        </div>
+    </div>
+    <p>On ne fait pas passer l'examen à un seul Jour à la fois, mais à un paquet entier — un
+        <strong>batch</strong> de courbes variées. La note moyenne du paquet indique dans quelle direction tourner
+        chacun des millions de boutons <span class="v mod">θ</span> pour faire un peu mieux la prochaine fois. C'est
+        la descente de gradient&nbsp;: un petit pas, puis un autre, puis dix mille autres.
+    </p>
+    <blockquote>« Au tour
+        numéro un, le Devin voyait des fantômes partout. Au tour cent mille, il reconnaissait la Brume comme on
+        reconnaît une vieille connaissance. »</blockquote> <!-- CH 6 — EMA -->
+    <section class="chap"><span class="num">CHAPITRE VI — LE SAGE</span>
+        <h2>Celui qui moyenne les humeurs</h2>
+    </section>
+    <p>Le Devin avait toutefois un défaut de jeunesse&nbsp;: il était lunatique. Un batch un peu bizarre,
+        et ses poids <span class="v mod">θ</span> sursautaient. Pour générer de belles courbes, on ne pouvait pas se
+        fier à son humeur de l'instant.</p>
+    <p>On nomma donc à ses côtés un <strong>Sage</strong>&nbsp;: la moyenne
+        mobile exponentielle, l'<span class="v mod">EMA</span>. À chaque tour, le Sage ne copiait pas brutalement le
+        Devin&nbsp;; il glissait doucement vers lui, gardant surtout la mémoire des ~1000 derniers tours.
+        Résultat&nbsp;: une version lissée, consolidée, sereine des poids — débarrassée des soubresauts. C'est
+        <em>cette</em> version qu'on garderait pour la grande œuvre.
+    </p>
+    <div class="card m">
+        <div class="sym">EMA</div>
+        <div>
+            <h4>EMA — le Sage (moyenne mobile des poids)</h4>
+            <p>Une copie lissée de <span class="v mod">θ</span> qui suit le Devin avec retard et inertie. Filtre les
+                batchs atypiques&nbsp;; ses poids produisent des générations bien plus stables.</p>
+        </div>
+    </div> <!-- CH 7 — GENERATION -->
+    <section class="chap"><span class="num">CHAPITRE VII — LA
+            CRÉATION</span>
+        <h2>Peindre un jour qui n'a jamais existé</h2>
+    </section>
+    <p class="lead">L'entraînement touche à sa fin. Le Devin (par la voix du Sage) sait désormais
+        reconnaître la Brume dans n'importe quelle courbe, à n'importe quelle étape. Vient l'instant magique, l'envers
+        exact de la longue nuit du Chapitre I&nbsp;: la <strong>boucle inverse</strong>.</p>
+    <p>On part de rien — du
+        chaos absolu, <span class="v sig">x_T</span>, de la Brume pure, comme au bout de l'effacement. Puis, étape
+        après étape, de <span class="v tim">t</span> vers <span class="v tim">t−1</span>&nbsp;: le Devin regarde la
+        courbe, devine la Brume qui s'y cache, on la retire un peu… et la courbe, lentement, se met à ressembler à une
+        journée.</p>
+    <div class="eq"> <span class="cap">Équation 6 · un pas de génération (reverse)</span>
+        <b class="sig">xₜ₋₁</b> = (1/√<b class="noise">αₜ</b>) · ( <b class="sig">xₜ</b> − k · <b class="mod">ε_θ</b>(<b
+            class="sig">xₜ</b>,<b class="tim">t</b>) ) &nbsp;+&nbsp; <b class="noise">σₜ
+            z</b>
+    </div>
+    <p>Un détail compte énormément&nbsp;: à chaque pas (sauf le tout dernier), on rajoute une
+        petite pincée de hasard frais, <span class="v noise">σₜ z</span>, où <span class="v noise">z ~ 𝒩(0,
+            I)</span>. Sans elle, le Devin lisserait tout, raboterait les pics et les creux, et accoucherait d'une
+        journée fade et moyenne. Cette pincée — la dynamique de Langevin — préserve les asymétries vivantes des vraies
+        charges électriques&nbsp;: la montée brutale du soir, la descente plus douce de la nuit.</p>
+    <div class="card n">
+        <div class="sym">σₜz</div>
+        <div>
+            <h4>σₜ z — la pincée de hasard (reverse)</h4>
+            <p>Un petit bruit réinjecté à chaque pas de génération (sauf le dernier). Empêche le lissage excessif et
+                maintient le relief réaliste des courbes. <span class="v tim">z</span> est tiré à neuf à chaque étape.
+            </p>
+        </div>
+    </div>
+    <p>Au pas zéro, plus de hasard à ajouter&nbsp;: la Brume s'est entièrement dissipée. Ce qui
+        reste sur la toile est une courbe nette, plausible, avec son creux nocturne et son pic de 19h — une journée de
+        consommation parfaitement crédible pour l'Île-de-France. Et pourtant&nbsp;: <strong>elle n'a jamais
+            existé</strong>. Aucun jour réel ne lui correspond. Le Devin l'a rêvée à partir de pur brouillard.</p>
+    <blockquote>De la destruction méthodique d'un jour vrai, le royaume avait appris à créer des jours neufs. La boucle
+        était bouclée.</blockquote> <!-- EPILOGUE -->
+    <section class="chap"><span class="num">ÉPILOGUE</span>
+        <h2>Le casting au complet</h2>
+    </section>
+    <p>Toutes les variables de notre fable, réunies pour le salut final&nbsp;:</p>
+    <div class="gloss">
+        <div class="row s">
+            <div class="sym">x₀</div>
+            <div class="def"><b>La Vraie Journée.</b> Signal pur de départ — une courbe réelle de 48 demi-heures.
+            </div>
+        </div>
+        <div class="row s">
+            <div class="sym">xₜ₋₁</div>
+            <div class="def"><b>L'étape précédente.</b> L'état du jour juste avant qu'on ajoute la dose de brume du
+                moment.</div>
+        </div>
+        <div class="row s">
+            <div class="sym">xₜ</div>
+            <div class="def"><b>Le jour à demi effacé.</b> Mélange de signal et de bruit à l'étape <span class="v
+                    tim">t</span>.</div>
+        </div>
+        <div class="row n">
+            <div class="sym">ε</div>
+            <div class="def"><b>La Brume.</b> Bruit blanc gaussien 𝒩(0, I)&nbsp;: matière de la destruction et de la
+                création.</div>
+        </div>
+        <div class="row n">
+            <div class="sym">βₜ</div>
+            <div class="def"><b>La dose de brume.</b> Quantité de bruit injectée à l'étape <span class="v
+                    tim">t</span> (« noise schedule »).</div>
+        </div>
+        <div class="row n">
+            <div class="sym">αₜ</div>
+            <div class="def"><b>La survie d'une étape.</b> αₜ = 1 − βₜ&nbsp;: la part du signal qui passe le cap.
+            </div>
+        </div>
+        <div class="row n">
+            <div class="sym"><span class="ov">α</span>ₜ</div>
+            <div class="def"><b>Alpha-barre.</b> Produit cumulé des survies&nbsp;: ce qu'il reste du Jour après <span
+                    class="v tim">t</span> étapes (→ 0 à la fin).</div>
+        </div>
+        <div class="row n">
+            <div class="sym">σₜz</div>
+            <div class="def"><b>La pincée de hasard.</b> Bruit réinjecté lors de la génération pour préserver le
+                relief (Langevin).</div>
+        </div>
+        <div class="row t">
+            <div class="sym">t</div>
+            <div class="def"><b>L'étape.</b> La position dans le voyage de bruitage / débruitage.</div>
+        </div>
+        <div class="row t">
+            <div class="sym">T</div>
+            <div class="def"><b>Le bout du voyage.</b> Nombre total d'étapes (≈ 1000)&nbsp;; à T, il ne reste que de
+                la brume.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">ε_θ</div>
+            <div class="def"><b>Le Devin.</b> Le réseau qui prédit la brume à partir de <span class="v
+                    sig">xₜ</span> et <span class="v tim">t</span>.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">θ</div>
+            <div class="def"><b>Les poids.</b> Les ~7,6 M paramètres réglables&nbsp;: le savoir du Devin.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">L</div>
+            <div class="def"><b>La perte.</b> Erreur quadratique entre brume vraie et brume devinée&nbsp;; on la
+                minimise.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">D</div>
+            <div class="def"><b>L'espace de pensée.</b> Dimension cachée (256) où le réseau raisonne.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">Q K V</div>
+            <div class="def"><b>Le conseil.</b> Requête / Clé / Valeur de l'auto-attention&nbsp;; chaque instant
+                consulte tous les autres.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">d_k</div>
+            <div class="def"><b>Le garde-fou.</b> Dimension des clés&nbsp;; on divise par √d_k pour empêcher la
+                softmax de saturer.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">γ β</div>
+            <div class="def"><b>Échelle &amp; décalage (adaLN).</b> Réglages tirés de <span class="v tim">t</span>
+                qui modulent chaque bloc.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">α=0</div>
+            <div class="def"><b>La vanne prudente (adaLN-Zero).</b> Initialisée à zéro&nbsp;: le bloc démarre en
+                identité, gradients stables.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">EMA</div>
+            <div class="def"><b>Le Sage.</b> Moyenne mobile des poids&nbsp;; version lissée utilisée pour générer.
+            </div>
+        </div>
+    </div>
+    <hr class="soft">
+    <p style="text-align:center;font-family:var(--display);font-style:italic;font-size:21px;color:var(--ink-soft)">Et
+        c'est ainsi que, chaque fois qu'on lui tend un peu de brouillard, le Devin y dessine une journée qui n'a jamais
+        existé — mais qui aurait très bien pu.</p>
+</main>
+<footer>FIN · une fable pour comprendre le Diffusion Transformer</footer>

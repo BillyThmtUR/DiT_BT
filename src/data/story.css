@@ -1,0 +1,424 @@
+:root {
+     --paper: #f7f4ee;
+    --ink: #2a2622;
+    --ink-soft: #6b6258;
+    --rule: #e3dccf;
+     --navy: #0f172a;
+     --sig: #0e9f6e;
+    --sig-bright: #34d399;
+     --noise: #e02424;
+    --noise-bright: #f87171;
+     --time: #2563eb;
+    --time-bright: #60a5fa;
+     --model: #7c3aed;
+    --model-bright: #a78bfa;
+     --serif: \"Spectral\", Georgia, serif;
+     --display: \"Fraunces\", Georgia, serif;
+     --mono: \"IBM Plex Mono\", ui-monospace, monospace;
+    
+}
+
+ .story-scope * {
+    box-sizing: border-box
+}
+
+  .story-scope {
+     margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+     font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.72;
+     -webkit-font-smoothing: antialiased;
+     background-image: radial-gradient(rgba(0, 0, 0, .022) 1px, transparent 1px);
+     background-size: 4px 4px;
+    
+}
+
+  .story-scope .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 28px
+}
+
+
+
+/* ---------- HERO ---------- */
+ .story-scope header.hero {
+    padding: 96px 0 40px;
+    border-bottom: 1px solid var(--rule);
+    text-align: center
+}
+
+ .story-scope .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: var(--ink-soft)
+}
+
+ .story-scope h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(38px, 7vw, 68px);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    margin: .35em 0 .25em
+}
+
+ .story-scope .sub {
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(18px, 3vw, 24px);
+    color: var(--ink-soft)
+}
+
+ .story-scope .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 34px
+}
+
+ .story-scope .legend span {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 13px;
+    background: #fff
+}
+
+ .story-scope .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: middle
+}
+
+
+
+/* ---------- TEXT ---------- */
+ .story-scope main {
+    padding: 18px 0 60px
+}
+
+ .story-scope .chap {
+    margin: 72px 0 8px
+}
+
+ .story-scope .chap .num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .3em;
+    color: var(--ink-soft)
+}
+
+ .story-scope .chap h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(27px, 4.5vw, 38px);
+    line-height: 1.1;
+    letter-spacing: -.01em;
+    margin: .18em 0 0
+}
+
+ .story-scope p {
+    margin: 1.15em 0
+}
+
+ .story-scope .lead::first-letter {
+    font-family: var(--display);
+    font-weight: 900;
+    float: left;
+    font-size: 3.4em;
+    line-height: .78;
+    padding: .06em .1em 0 0;
+    color: var(--ink)
+}
+
+ .story-scope em {
+    font-style: italic
+}
+
+ .story-scope strong {
+    font-weight: 600
+}
+
+
+
+/* variable tags */
+ .story-scope .v {
+    font-family: var(--mono);
+    font-weight: 600;
+    padding: .04em .1em;
+    white-space: nowrap
+}
+
+ .story-scope .sig {
+    color: var(--sig)
+}
+
+.story-scope .noise {
+    color: var(--noise)
+}
+
+.story-scope .tim {
+    color: var(--time)
+}
+
+.story-scope .mod {
+    color: var(--model)
+}
+
+ .story-scope .ov {
+    text-decoration: overline
+}
+
+
+
+/* character card */
+ .story-scope .card {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    align-items: center;
+     border: 1px solid var(--rule);
+    border-left-width: 5px;
+    border-radius: 14px;
+    background: #fff;
+     padding: 18px 20px;
+    margin: 26px 0;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .03)
+}
+
+ .story-scope .card .sym {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 30px;
+    text-align: center
+}
+
+ .story-scope .card h4 {
+    margin: 0 0 2px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px
+}
+
+ .story-scope .card p {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.5;
+    color: var(--ink-soft)
+}
+
+ .story-scope .card.s {
+    border-left-color: var(--sig)
+}
+
+.story-scope .card.s .sym {
+    color: var(--sig)
+}
+
+ .story-scope .card.n {
+    border-left-color: var(--noise)
+}
+
+.story-scope .card.n .sym {
+    color: var(--noise)
+}
+
+ .story-scope .card.t {
+    border-left-color: var(--time)
+}
+
+.story-scope .card.t .sym {
+    color: var(--time)
+}
+
+ .story-scope .card.m {
+    border-left-color: var(--model)
+}
+
+.story-scope .card.m .sym {
+    color: var(--model)
+}
+
+
+
+/* equation box */
+ .story-scope .eq {
+    background: var(--navy);
+    color: #e2e8f0;
+    border-radius: 14px;
+    border-left: 4px solid var(--time-bright);
+     padding: 26px 24px;
+    margin: 30px 0;
+    font-family: var(--mono);
+    text-align: center;
+    font-size: 18px;
+     overflow-x: auto;
+    box-shadow: inset 0 2px 14px rgba(0, 0, 0, .25)
+}
+
+ .story-scope .eq .cap {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+     color: #94a3b8;
+    margin-bottom: 14px
+}
+
+ .story-scope .eq b.sig {
+    color: var(--sig-bright)
+}
+
+.story-scope .eq b.noise {
+    color: var(--noise-bright)
+}
+
+ .story-scope .eq b.tim {
+    color: var(--time-bright)
+}
+
+.story-scope .eq b.mod {
+    color: var(--model-bright)
+}
+
+ .story-scope .eq b {
+    font-weight: 600
+}
+
+ .story-scope blockquote {
+    margin: 34px 0;
+    padding: 0 0 0 22px;
+    border-left: 3px solid var(--model);
+     font-family: var(--display);
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.45;
+    color: #3a342d
+}
+
+ .story-scope .note {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 16px;
+    color: var(--ink-soft)
+}
+
+ .story-scope .note b {
+    color: var(--ink)
+}
+
+
+
+/* glossary */
+ .story-scope .gloss {
+    margin: 34px 0;
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff
+}
+
+ .story-scope .gloss .row {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 0;
+    border-top: 1px solid var(--rule)
+}
+
+ .story-scope .gloss .row:first-child {
+    border-top: none
+}
+
+ .story-scope .gloss .sym {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 18px;
+    padding: 14px 12px;
+    text-align: center;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+ .story-scope .gloss .def {
+    padding: 13px 16px;
+    font-size: 15.5px;
+    line-height: 1.5
+}
+
+ .story-scope .gloss .def b {
+    font-family: var(--display);
+    font-weight: 600
+}
+
+ .story-scope .gloss .s .sym {
+    color: var(--sig)
+}
+
+.story-scope .gloss .n .sym {
+    color: var(--noise)
+}
+
+ .story-scope .gloss .t .sym {
+    color: var(--time)
+}
+
+.story-scope .gloss .m .sym {
+    color: var(--model)
+}
+
+ .story-scope hr.soft {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 60px 0
+}
+
+ .story-scope footer {
+    padding: 50px 0 90px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-family: var(--mono);
+    letter-spacing: .04em
+}
+
+ .story-scope .fade {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: up .9s cubic-bezier(.16, 1, .3, 1) forwards
+}
+
+ @keyframes up {
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+ @media(max-width:520px) {
+    .story-scope {
+        font-size: 18px
+    }
+
+    .story-scope .card {
+        grid-template-columns: 50px 1fr;
+        gap: 14px
+    }
+}

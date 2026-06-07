@@ -1,0 +1,1406 @@
+<header class="bg-white shadow-md border-b border-slate-200 py-16 px-6 mb-12">
+  
+  <div class="max-w-6xl mx-auto">
+    
+    <div class="flex justify-between items-start mb-8">
+      
+      <div></div>
+       
+    </div>
+    
+    <h1 class="text-5xl font-black text-slate-900 tracking-tight mb-4">
+      Diffusion Transformer (DiT)
+    </h1>
+    
+    <!-- Contexte Data -->
+    <div class="bg-slate-800 text-white p-6 rounded-xl shadow-inner mb-8">
+      
+      <h3
+        class="text-lg font-bold text-slate-200 mb-2 uppercase tracking-wide text-sm"
+      >
+        Contexte de la Donnée (RTE Île-de-France)
+      </h3>
+      
+      <p class="text-sm text-slate-300 leading-relaxed">
+         Nous travaillons sur des séquences journalières. Une journée est
+        représentée par un vecteur de
+        <span class="text-emerald-400 font-bold">48 pas de temps</span>
+        (résolution demi-horaire).  l'amplitude maximale observée est de
+        <span class="text-emerald-400 font-bold">13 325 kWh</span>. Avant
+        d\'entrer dans le modèle, la série est normalisée (ex: entre -1 et 1)
+        pour stabiliser l'apprentissage des réseaux de neurones.
+      </p>
+      
+    </div>
+     
+    <!-- Légende -->
+    <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
+      
+      <h3
+        class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4"
+      >
+        La Grammaire Visuelle des Équations
+      </h3>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+        
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-emerald-500"></div>
+          <span class="text-slate-700"
+            ><b>Signal / Donnée</b> <br />\( (x_0, x_{t-1}, x_t) \)</span
+          >
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-red-500"></div>
+          <span class="text-slate-700"
+            ><b>Bruit / Aléa</b> <br />\( (\epsilon, \beta, \alpha, z)
+            \)</span
+          >
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-blue-500"></div>
+          <span class="text-slate-700"
+            ><b>Temps / Étapes</b> <br />\( (t, T) \)</span
+          >
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-violet-500"></div>
+          <span class="text-slate-700"
+            ><b>Modèle / Poids</b> <br />\( (\theta, L, \gamma, \beta_{ada})
+            \)</span
+          >
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  </div>
+  
+</header>
+<main class="max-w-6xl mx-auto px-6 space-y-20">
+  
+  <!-- VUE D\'ENSEMBLE : ARCHITECTURE DiT -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+    
+    <div class="mb-6">
+      
+      <span
+        class="uppercase tracking-widest text-xs font-black text-blue-500 mb-2 block"
+        >Vue d\'ensemble</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        l'Architecture du Diffusion Transformer
+      </h2>
+      
+      <p class="text-slate-500 mt-2 text-lg">
+        Avant de plonger dans les équations, voici le plan du réseau
+        <span class="color-model">\(\epsilon_\theta\)</span> chargé de
+        prédire le bruit à chaque étape.
+      </p>
+      
+    </div>
+    
+    <figure
+      class="bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-8 mb-8 shadow-inner"
+    >
+      
+      <div
+        class="w-full max-w-3xl mx-auto rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center text-center px-6 py-16 text-slate-400"
+      >
+        <span class="text-sm font-semibold uppercase tracking-widest mb-2"
+          >Schéma indisponible</span
+        ><span class="text-sm"
+          >Schéma de l'architecture du Diffusion Transformer (DiT)</span
+        >
+      </div>
+      
+    </figure>
+    
+    <div class="grid md:grid-cols-2 gap-10">
+      
+      <div>
+        
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          Comment lire ce schéma (de bas en haut)
+        </h3>
+        
+        <ol class="space-y-4 text-slate-700 list-decimal list-inside">
+          
+          <li>
+            <strong
+              >Entrée bruitée
+              <span class="color-signal">\(x_t\)</span> :</strong
+            >
+            la courbe de 48 demi-heures, corrompue à l'étape
+            <span class="color-time">t</span> (cf. Éq. 2).
+          </li>
+          
+          <li>
+            <strong>Patchify + projection :</strong> la séquence est découpée en
+            patches, puis projetée dans l'espace caché \(D=256\) (cf. Éq. 4).
+          </li>
+          
+          <li>
+            <strong>Pile de \(N\) blocs DiT :</strong> chaque bloc applique
+            Attention + MLP, modulés par le temps
+            <span class="color-time">t</span> via l'<strong>adaLN-Zero</strong>
+            (cf. Éq. 5).
+          </li>
+          
+          <li>
+            <strong>Décodage linéaire :</strong> projection de retour vers les
+            48 valeurs.
+          </li>
+          
+          <li>
+            <strong
+              >Sortie
+              <span class="color-noise">\(\epsilon_\theta\)</span> :</strong
+            >
+            l'estimation du bruit, confrontée au bruit réel par la perte MSE
+            (cf. Éq. 3).
+          </li>
+          
+        </ol>
+        
+      </div>
+      
+      <div class="space-y-6">
+        
+        <div
+          class="bg-violet-50 border border-violet-200 p-6 rounded-2xl shadow-sm"
+        >
+          
+          <h4
+            class="font-bold text-violet-900 mb-3 uppercase tracking-wide text-xs"
+          >
+            Le conditionnement temporel
+          </h4>
+          
+          <p class="text-sm text-violet-800 leading-relaxed">
+            Sur le côté du schéma, le pas de temps
+            <span class="color-time">t</span> (et toute condition externe)
+            traverse un petit MLP qui génère les paramètres de modulation
+            <span class="color-model">\(\gamma_t, \beta_t, \alpha\)</span>
+            injectés dans chaque bloc. C\'est le seul canal par lequel le réseau
+            « sait » à quel niveau de bruit il opère.
+          </p>
+          
+        </div>
+        
+        <div
+          class="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-2xl"
+        >
+          
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-indigo-500 mb-1 block"
+            >Le changement de paradigme</span
+          >
+          <h4 class="font-bold text-indigo-900 text-lg">
+            Ni convolution, ni U-Net
+          </h4>
+          
+          <p class="text-indigo-800 text-sm mt-2 leading-relaxed">
+            Contrairement aux modèles de diffusion historiques bâtis sur un
+            <strong>U-Net convolutif</strong>, le DiT remplace intégralement ce
+            squelette par une pile de <strong>Transformers</strong>. La section
+            dédiée détaille pourquoi ce choix l'a emporté.
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  </section>
+  
+  <!-- Equation 1 -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative"
+  >
+    
+    <div
+      class="absolute -left-4 top-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      1
+    </div>
+     
+    <div class="mb-6">
+      
+      <h2 class="text-3xl font-black text-slate-800">
+        Le Processus Forward (Bruitage de Markov)
+      </h2>
+      
+      <p class="text-slate-500 mt-2 text-lg">
+        La destruction méthodique de la structure électrique temporelle.
+      </p>
+      
+    </div>
+     
+    <div class="math-box text-2xl text-center">
+       $$ q(\color{#10b981}{x_t} | \color{#10b981}{x_{t-1}}) =
+      \mathcal{N}(\color{#10b981}{x_t} ; \sqrt{1-\color{#ef4444}{\beta_t}}
+      \color{#10b981}{x_{t-1}}, \color{#ef4444}{\beta_t} I) $$
+    </div>
+    
+    <div class="deep-dive mb-8">
+      
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Deep Dive Mathématique : Pourquoi cette forme ?
+      </h4>
+      
+      <p class="text-sm text-slate-600">
+        Cette équation est une <em>Chaîne de Markov</em>. l'état \(x_t\) ne
+        dépend QUE de \(x_{t-1}\). La moyenne de la gaussienne est légèrement
+        rétrécie par le facteur \(\sqrt{1-\beta_t}\). Pourquoi ? Pour
+        s\'assurer que la variance totale de la série ne diverge pas vers
+        l'infini au fil des étapes. Sans ce terme de rétrécissement, ajouter du
+        bruit continuellement ferait exploser l'amplitude de la série bien
+        au-delà des 13 325 kWh.
+      </p>
+      
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-10">
+      
+      <div>
+        
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          Décorticage des variables
+        </h3>
+        
+        <ul class="space-y-4 text-slate-700">
+          
+          <li>
+            <strong>\( q(...) \) - Probabilité de transition :</strong> La
+            distribution de probabilité décrivant comment on passe d\'un état à
+            l'autre.
+          </li>
+          
+          <li>
+            <strong
+              ><span class="color-noise">\(\beta_t\)</span> - La variance du
+              bruit :</strong
+            >
+            C\'est la quantité de "désordre" injectée. Elle n\'est pas constante
+            : elle est minuscule au début (ex: \(10^{-4}\)) et augmente avec
+            <span class="color-time">\(t\)</span> (jusqu\'à \(0.02\)).
+          </li>
+          
+          <li>
+            <strong>\( I \) - Matrice Identité (48x48) :</strong> Signifie que
+            le bruit ajouté à 10h00 est strictement indépendant du bruit ajouté
+            à 10h30.
+          </li>
+          
+        </ul>
+        
+      </div>
+       
+      <div class="space-y-6">
+        
+        <div
+          class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm"
+        >
+          
+          <h4
+            class="font-bold text-emerald-900 mb-3 text-lg uppercase tracking-wide text-xs"
+          >
+            Exemple Numérique (Pic d\'hiver à 19h00)
+          </h4>
+          
+          <div class="text-sm space-y-2 text-emerald-800">
+            
+            <p>
+              Supposons la valeur normalisée du pic à 19h00 :
+              <span class="color-signal">\(x_{t-1} = 0.85\)</span>.
+            </p>
+            
+            <p>
+              À l'étape <span class="color-time">t=10</span>, le bruit est
+              faible :
+              <span class="color-noise">\(\beta_{10} = 0.001\)</span>.
+            </p>
+            
+            <p
+              class="bg-white p-3 rounded border border-emerald-100 my-2 font-mono text-xs"
+            >
+               Moyenne = √(1 - 0.001) × 0.85 ≈ 0.8495<br /> Écart-type
+              (bruit) = √0.001 ≈ 0.0316
+            </p>
+            
+            <p>
+              Le point de 19h00 à l'étape \(t=10\) sera tiré au hasard entre
+              <strong>0.817 et 0.881</strong> (à 1 écart-type). La forme de la
+              courbe est encore très reconnaissable.
+            </p>
+            
+          </div>
+          
+        </div>
+        
+        <div
+          class="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-2xl"
+        >
+          
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-indigo-500 mb-1 block"
+            >Analogie</span
+          >
+          <h4 class="font-bold text-indigo-900 text-lg">l'Érosion</h4>
+          
+          <p class="text-indigo-800 text-sm mt-2 leading-relaxed">
+            Imaginez une sculpture de sable très détaillée (votre courbe
+            électrique). À chaque étape <span class="color-time">\(t\)</span>,
+            un coup de vent (le bruit gaussien) souffle. Le facteur
+            \(\sqrt{1-\beta_t}\) tasse légèrement le sable pour éviter
+            qu\'il ne s\'éparpille sur toute la plage, tandis que le vent floute
+            les détails.
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  </section>
+  
+  <!-- Equation 2 -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative"
+  >
+    
+    <div
+      class="absolute -left-4 top-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      2
+    </div>
+     
+    <div class="mb-6">
+      
+      <h2 class="text-3xl font-black text-slate-800">
+        Le Saut Temporel (Trick de Reparamétrisation)
+      </h2>
+      
+      <p class="text-slate-500 mt-2 text-lg">
+        Comment court-circuiter 1000 étapes de calcul grâce aux propriétés des
+        gaussiennes.
+      </p>
+      
+    </div>
+     
+    <div class="math-box text-2xl text-center mb-8">
+       $$ \color{#10b981}{x_t} = \sqrt{\color{#ef4444}{\bar{\alpha}_t}}
+      \color{#10b981}{x_0} + \sqrt{1-\color{#ef4444}{\bar{\alpha}_t}}
+      \color{#ef4444}{\epsilon} $$
+    </div>
+    
+    <!-- NOUVEAU BLOC : EXPLICATION PAS À PAS -->
+    <div
+      class="bg-slate-50 rounded-2xl border border-slate-200 p-8 mb-10 shadow-sm"
+    >
+      
+      <h3
+        class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-3"
+      >
+        La Mécanique du Calcul (Démonstration pas-à-pas)
+      </h3>
+       
+      <div class="space-y-6 text-slate-700">
+        
+        <p>
+          <strong>Le Problème :</strong> Si on veut entraîner le modèle sur
+          l'étape <span class="color-time">t=500</span>, appliquer l'Équation
+          1 boucle par boucle 500 fois prendrait un temps de calcul infini. Il
+          nous faut une formule directe depuis
+          <span class="color-signal">\(x_0\)</span>.
+        </p>
+         
+        <div class="pl-4 border-l-4 border-blue-400 space-y-4">
+          
+          <p>
+            <strong>Étape 1 : Simplification de la notation</strong><br />
+            Posons
+            <span class="color-noise">\(\alpha_t = 1 - \beta_t\)</span>.
+            l'équation de base devient :<br />
+            <span
+              class="bg-white px-3 py-1 rounded border border-slate-200 inline-block mt-2"
+              >$$ x_t = \sqrt{\alpha_t} x_{t-1} +
+              \sqrt{1-\alpha_t}\epsilon_{t-1} $$</span
+            >
+          </p>
+          
+          <p>
+            <strong>Étape 2 : Le développement (Unrolling)</strong><br /> Que
+            vaut \(x_{t-1}\) ? Il vaut \(\sqrt{\alpha_{t-1}} x_{t-2} +
+            \sqrt{1-\alpha_{t-1}}\epsilon_{t-2}\).<br /> Substituons cette
+            valeur directement dans notre première équation :<br />
+            <span
+              class="bg-white px-3 py-1 rounded border border-slate-200 inline-block mt-2 text-sm"
+              >$$ x_t = \sqrt{\alpha_t} \Big( \sqrt{\alpha_{t-1}} x_{t-2} +
+              \sqrt{1-\alpha_{t-1}}\epsilon_{t-2} \Big) +
+              \sqrt{1-\alpha_t}\epsilon_{t-1} $$</span
+            ><br /> En développant, on obtient le signal pur d\'un côté, et
+            une somme de deux bruits de l'autre :<br />
+            <span
+              class="bg-white px-3 py-1 rounded border border-slate-200 inline-block mt-2 font-bold text-emerald-700"
+              >$$ x_t = \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} +
+              \underbrace{\sqrt{\alpha_t(1-\alpha_{t-1})}\epsilon_{t-2} +
+              \sqrt{1-\alpha_t}\epsilon_{t-1}}_{\text{Somme de deux
+              gaussiennes}} $$</span
+            >
+          </p>
+          
+          <p>
+            <strong>Étape 3 : La Magie de l'Addition des Gaussiennes</strong
+            ><br /> En statistiques, si on additionne deux variables
+            aléatoires gaussiennes \(\mathcal{N}(0, \sigma_1^2)\) et
+            \(\mathcal{N}(0, \sigma_2^2)\), le résultat est
+            <u>une seule gaussienne</u> dont les variances s\'additionnent :
+            \(\mathcal{N}(0, \sigma_1^2 + \sigma_2^2)\).<br />
+            Additionnons nos variances : \(\alpha_t(1-\alpha_{t-1}) +
+            (1-\alpha_t)\) =
+            <span class="font-bold text-red-600"
+              >\(1 - \alpha_t \alpha_{t-1}\)</span
+            >.<br /> Le nouveau coefficient global du bruit devient donc
+            simplement : \(\sqrt{1 - \alpha_t \alpha_{t-1}}\).
+          </p>
+           
+          <p>
+            <strong>Étape Finale : Généralisation jusqu\'à \(x_0\)</strong
+            ><br /> En répétant cette substitution jusqu\'à l'étape 0, on
+            accumule tous les \(\alpha_i\) dans un produit cumulatif que
+            l'on nomme
+            <span class="color-noise">\(\bar{\alpha}_t\) (Alpha-bar)</span>
+            = \(\prod_{i=1}^t \alpha_i\).<br /> On obtient la formule
+            miracle en \( \mathcal{O}(1) \) :
+            <span class="color-signal">Signal</span> \(\times
+            \sqrt{\bar{\alpha}_t}\) +
+            <span class="color-noise">Bruit</span> \(\times
+            \sqrt{1-\bar{\alpha}_t}\).
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-10">
+      
+      <div>
+        
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          Décorticage final des variables
+        </h3>
+        
+        <ul class="space-y-4 text-slate-700">
+          
+          <li>
+            <strong
+              ><span class="color-signal">\(x_0\)</span> - Le Signal Pur
+              :</strong
+            >
+            La courbe réelle (ex: 24h de consommation).
+          </li>
+          
+          <li>
+            <strong
+              ><span class="color-noise">\(\bar{\alpha}_t\)</span> -
+              l'Alpha-bar :</strong
+            >
+            Le produit cumulatif de tous les coefficients de survie. Il décroît
+            de manière monotone de ~1 (à t=0) vers ~0 (à t=T).
+          </li>
+          
+          <li>
+            <strong
+              ><span class="color-noise">\(\sqrt{\bar{\alpha}_t}\)</span>
+              :</strong
+            >
+            Le ratio exact du signal d\'origine préservé.
+          </li>
+          
+          <li>
+            <strong
+              ><span class="color-noise">\(\sqrt{1-\bar{\alpha}_t}\)</span>
+              :</strong
+            >
+            Le ratio exact du bruit accumulé.
+          </li>
+          
+          <li>
+            <strong
+              ><span class="color-noise"
+                >\(\epsilon \sim \mathcal{N}(0, I)\)</span
+              >
+              :</strong
+            >
+            Un unique tenseur de bruit généré aléatoirement pour représenter la
+            somme de tous les bruits intermédiaires.
+          </li>
+          
+        </ul>
+        
+      </div>
+       
+      <div class="space-y-6">
+        
+        <div
+          class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm"
+        >
+          
+          <h4
+            class="font-bold text-emerald-900 mb-3 text-lg uppercase tracking-wide text-xs"
+          >
+            Exemple Numérique de la variance
+          </h4>
+          
+          <div class="text-sm space-y-2 text-emerald-800">
+            
+            <p>
+              À l'étape <span class="color-time">t=500</span>, la somme de
+              toutes les petites variances injectées fait que
+              <span class="color-noise">\(\bar{\alpha}_{500} = 0.05\)</span
+              >.
+            </p>
+            
+            <p
+              class="bg-white p-3 rounded border border-emerald-100 my-2 font-mono text-xs"
+            >
+               Ratio de Signal = √0.05 ≈ 0.22 (22% de la courbe RTE reste
+              visible)<br /> Ratio de Bruit = √(1 - 0.05) ≈ 0.97 (97% de
+              l'amplitude vient du bruit)
+            </p>
+            
+            <p>
+              <strong>Vérification trigonométrique :</strong> On observe que
+              \(0.22^2 + 0.97^2 = 0.05 + 0.95 = 1\). l'énergie totale du
+              vecteur est préservée et ne diverge pas.
+            </p>
+            
+          </div>
+          
+        </div>
+        
+        <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-2xl">
+          
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+            >Analogie Pratique</span
+          >
+          <h4 class="font-bold text-slate-800 text-lg">
+            Le Mélangeur de Peinture
+          </h4>
+          
+          <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+            Imaginez que vous voulez obtenir une nuance de gris très précise en
+            mélangeant 1000 gouttes de peinture blanche et noire une par une. Le
+            mathématicien ne fait pas ça : il calcule le volume final exact de
+            blanc et de noir requis, et les verse d\'un seul coup. C\'est le
+            trick de reparamétrisation.
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  </section>
+  
+  <!-- Equation 3 -->
+  <section
+    class="bg-slate-800 p-10 rounded-3xl shadow-xl border border-slate-700 relative text-white"
+  >
+    
+    <div
+      class="absolute -left-4 top-10 bg-violet-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-slate-800"
+    >
+      3
+    </div>
+     
+    <div class="mb-6">
+      
+      <h2 class="text-3xl font-black text-white">
+        La Fonction de Perte (l'Apprentissage)
+      </h2>
+      
+      <p class="text-slate-300 mt-2 text-lg">
+        Comment le Transformer ajuste ses 7.6 millions de paramètres.
+      </p>
+      
+    </div>
+     
+    <div
+      class="bg-slate-900 rounded-xl p-6 text-2xl text-center border border-slate-700 my-8 shadow-inner"
+    >
+       $$ \color{#c4b5fd}{L} = \mathbb{E}_{\color{#93c5fd}{t},
+      \color{#6ee7b7}{x_0}, \color{#fca5a5}{\epsilon}} \left[ \|
+      \color{#fca5a5}{\epsilon} -
+      \color{#fca5a5}{\epsilon}_{\color{#c4b5fd}{\theta}}(\color{#6ee7b7}{x_t},
+      \color{#93c5fd}{t}) \|^2 \right] $$
+    </div>
+    
+    <div
+      class="deep-dive mb-8 bg-slate-700 border-l-4 border-violet-400 text-slate-200"
+    >
+      
+      <h4 class="font-bold text-white mb-2 uppercase tracking-wide text-xs">
+        Deep Dive : Prédire le bruit vs Prédire le signal
+      </h4>
+      
+      <p class="text-sm">
+        Théoriquement, le modèle pourrait essayer de deviner
+        <span class="text-emerald-400">\(x_0\)</span> (la courbe sans bruit).
+        Mais l'article fondateur DDPM (Ho et al.) a prouvé qu\'il est
+        mathématiquement plus stable de prédire
+        <span class="text-red-400">\(\epsilon\)</span> (le bruit ajouté). Le
+        bruit a toujours la même distribution (gaussienne centrée réduite), ce
+        qui rend les gradients d\'entraînement infiniment plus lisses et
+        prévisibles que d\'essayer de prédire des pics de consommation
+        erratiques.
+      </p>
+      
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-10">
+      
+      <div>
+        
+        <h3
+          class="font-bold text-xl border-b-2 border-slate-600 pb-3 mb-5 text-slate-100"
+        >
+          La mécanique du Batch
+        </h3>
+        
+        <ul class="space-y-4 text-slate-300 text-sm">
+          
+          <li>
+            <strong>1. Tirage de \(x_0\) :</strong> On pioche 128 courbes RTE
+            réelles (Batch Size).
+          </li>
+          
+          <li>
+            <strong>2. Tirage de \(t\) :</strong> Pour CHAQUE courbe, on tire
+            un pas de temps aléatoire uniforme \(t \sim \mathcal{U}(1, T)\).
+            Le modèle apprend sur toutes les temporalités simultanément.
+          </li>
+          
+          <li>
+            <strong>3. Tirage de \(\epsilon\) :</strong> On génère du bruit.
+            On applique l'Équation 2 pour créer \(x_t\).
+          </li>
+          
+          <li>
+            <strong>4. Prédiction :</strong> Le réseau
+            <span class="color-model">\(\theta\)</span> analyse \(x_t\) et
+            \(t\), puis recrache sa supposition \(\epsilon_\theta\).
+          </li>
+          
+          <li>
+            <strong>5. Correction (MSE) :</strong> La différence quadratique
+            moyenne \( \| \dots \|^2 \) dicte la mise à jour des poids via
+            la rétropropagation.
+          </li>
+          
+        </ul>
+        
+      </div>
+       
+      <div
+        class="bg-violet-900 border border-violet-700 p-6 rounded-2xl shadow-sm"
+      >
+        
+        <span
+          class="uppercase tracking-widest text-xs font-bold text-violet-400 mb-1 block"
+          >Analogie</span
+        >
+        <h4 class="font-bold text-violet-200 mb-3 text-lg">
+          l'Expert Forensic
+        </h4>
+        
+        <p class="text-sm text-violet-300 leading-relaxed mb-4">
+          Le réseau DiT (<span class="color-model">\(\theta\)</span>) est un
+          enquêteur de la police scientifique. On lui présente une vitre cassée
+          et floue (la courbe bruitée
+          <span class="color-signal">\(x_t\)</span>). On lui dit également "ce
+          brouillage date d\'il y a
+          <span class="color-time">t=400</span> minutes".
+        </p>
+        
+        <p class="text-sm text-violet-300 leading-relaxed">
+          Son travail n\'est PAS de redessiner la vitre intacte. Son travail est
+          de pointer exactement quelles empreintes et quels impacts (le vecteur
+          de bruit <span class="color-noise">\(\epsilon\)</span>) ont été
+          artificiellement ajoutés par-dessus la vitre originelle.
+        </p>
+        
+      </div>
+      
+    </div>
+    
+  </section>
+  
+  <!-- LE MÉCANISME TRANSFORMER & COMPARAISON U-NET -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 border-t-8 border-t-violet-500"
+  >
+    
+    <div class="mb-8">
+      
+      <span
+        class="uppercase tracking-widest text-xs font-black text-violet-500 mb-2 block"
+        >Pierre angulaire</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        Le Mécanisme Transformer (et pourquoi il a détrôné le U-Net)
+      </h2>
+      
+      <p class="text-slate-500 mt-2 text-lg">
+        Le squelette
+        <span class="color-model">\(\epsilon_\theta\)</span> n\'est plus un
+        réseau convolutif : c\'est une pile d\'<strong>attention</strong>.
+        Comprendre ce mécanisme, c\'est comprendre pourquoi le DiT généralise
+        mieux.
+      </p>
+      
+    </div>
+    
+    <!-- A. l'auto-attention -->
+    <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-3">
+      <span
+        class="bg-violet-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
+        >A</span
+      >
+      Le cœur : l'auto-attention
+    </h3>
+    
+    <p class="text-slate-600 mb-4">
+      l'idée centrale : chaque pas de temps ne se contente pas de regarder ses
+      voisins immédiats, il <em>interroge l'ensemble</em> de la journée pour
+      décider de ce qui compte. Le mécanisme produit trois projections par token
+      : une <strong>requête</strong> \(Q\), une <strong>clé</strong> \(K\)
+      et une <strong>valeur</strong> \(V\).
+    </p>
+    
+    <div class="math-box text-2xl text-center">
+       $$ \text{Attention}(\color{#8b5cf6}{Q}, \color{#8b5cf6}{K},
+      \color{#8b5cf6}{V}) = \text{softmax}\!\left(
+      \frac{\color{#8b5cf6}{Q}\color{#8b5cf6}{K}^\top}{\sqrt{d_k}} \right)
+      \color{#8b5cf6}{V} $$
+    </div>
+    
+    <div class="deep-dive mb-8">
+      
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Deep Dive : que calcule la softmax ?
+      </h4>
+      
+      <p class="text-sm text-slate-600">
+        Le produit \(QK^\top\) mesure la <strong>similarité</strong> entre
+        chaque paire de pas de temps. La division par \(\sqrt{d_k}\) empêche
+        ces scores d\'exploser quand la dimension grandit (sinon la softmax
+        saturerait et les gradients mourraient). La softmax les transforme en
+        poids sommant à 1 : chaque point reconstruit alors sa représentation
+        comme une <strong>moyenne pondérée</strong> des valeurs \(V\) de toute
+        la séquence. Conséquence majeure : le pic de 19h peut « consulter »
+        directement le creux de 4h du matin,
+        <strong>dès la première couche</strong>, sans aucune notion de distance.
+      </p>
+      
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-10 mb-12">
+      
+      <div>
+        
+        <h4 class="font-bold text-lg border-b-2 border-slate-100 pb-3 mb-4">
+          Les têtes multiples (Multi-Head)
+        </h4>
+        
+        <p class="text-sm text-slate-700 mb-3">
+          On n\'exécute pas une seule attention, mais plusieurs en parallèle
+          (les « têtes »). Chacune apprend un type de relation différent :
+        </p>
+        
+        <ul class="space-y-2 text-sm text-slate-700 list-disc list-inside">
+          
+          <li>
+            une tête peut capter la
+            <strong>périodicité journalière</strong> (corrélation matin/soir) ;
+          </li>
+          
+          <li>une autre la <strong>rampe de montée</strong> du soir ;</li>
+          
+          <li>une autre les <strong>plateaux nocturnes</strong>.</li>
+          
+        </ul>
+        
+        <p class="text-sm text-slate-700 mt-3">
+          Leurs sorties sont concaténées puis reprojetées, donnant au bloc une
+          vue multi-facettes de la même journée.
+        </p>
+        
+      </div>
+      
+      <div
+        class="bg-violet-50 border border-violet-200 p-6 rounded-2xl shadow-sm"
+      >
+        
+        <span
+          class="uppercase tracking-widest text-xs font-bold text-violet-500 mb-1 block"
+          >Analogie</span
+        >
+        <h4 class="font-bold text-violet-900 text-lg mb-2">
+          La table ronde d\'experts
+        </h4>
+        
+        <p class="text-violet-800 text-sm leading-relaxed">
+          Le U-Net est un expert myope qui scrute la courbe à la loupe,
+          centimètre par centimètre, et n\'obtient une vue globale qu\'à force
+          de reculer (pooling). Le Transformer convoque d\'emblée une table
+          ronde où chaque heure expose son cas à toutes les autres : la décision
+          est <strong>globale dès le premier échange</strong>.
+        </p>
+        
+      </div>
+      
+    </div>
+    
+    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6 mb-12">
+      
+      <h4 class="font-bold text-slate-800 mb-2 uppercase tracking-wide text-xs">
+        Rappel : la structure d\'un bloc DiT
+      </h4>
+      
+      <p class="text-sm text-slate-600">
+        Chaque bloc enchaîne :
+        <span class="font-mono text-violet-700">adaLN(t)</span> →
+        <strong>Multi-Head Attention</strong> → résidu (porte
+        <span class="color-noise">\(\alpha\)</span>) →
+        <span class="font-mono text-violet-700">adaLN(t)</span> →
+        <strong>MLP</strong> → résidu. C\'est exactement l'Équation 5,
+        \(x_{l+1} = x_l + \alpha \cdot \text{Layer}(\gamma_t \odot
+        \hat{h}_l + \beta_t)\) : l'attention y joue le rôle de
+        <span class="font-mono">Layer</span>, et le temps
+        <span class="color-time">t</span> module l'ensemble.
+      </p>
+      
+    </div>
+    
+    <!-- B. Comparaison -->
+    <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-3">
+      <span
+        class="bg-violet-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
+        >B</span
+      >
+      Face à face : U-Net convolutif vs DiT
+    </h3>
+    
+    <div class="overflow-x-auto mb-12">
+      
+      <table class="w-full text-sm text-left border-collapse">
+        
+        <thead>
+          
+          <tr class="bg-slate-800 text-white">
+            
+            <th class="p-4 font-bold rounded-tl-xl">Critère</th>
+            
+            <th class="p-4 font-bold">U-Net (convolutif)</th>
+            
+            <th class="p-4 font-bold rounded-tr-xl">DiT (Transformer)</th>
+            
+          </tr>
+          
+        </thead>
+        
+        <tbody class="divide-y divide-slate-200">
+          
+          <tr class="bg-white">
+            
+            <td class="p-4 font-semibold text-slate-700">Opération de base</td>
+            
+            <td class="p-4 text-slate-600">
+              Convolution (noyau local, ex. 3×3)
+            </td>
+            
+            <td class="p-4 text-slate-600">Attention globale entre tokens</td>
+            
+          </tr>
+          
+          <tr class="bg-slate-50">
+            
+            <td class="p-4 font-semibold text-slate-700">Champ réceptif</td>
+            
+            <td class="p-4 text-slate-600">
+              Local, élargi par empilement + pooling
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Global dès la 1<sup>re</sup> couche
+            </td>
+            
+          </tr>
+          
+          <tr class="bg-white">
+            
+            <td class="p-4 font-semibold text-slate-700">Biais inductif</td>
+            
+            <td class="p-4 text-slate-600">
+              Fort (localité, invariance par translation)
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Faible : la structure est apprise des données
+            </td>
+            
+          </tr>
+          
+          <tr class="bg-slate-50">
+            
+            <td class="p-4 font-semibold text-slate-700">Structure</td>
+            
+            <td class="p-4 text-slate-600">
+              Encodeur/décodeur en U + skip-connections
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Pile homogène de blocs identiques
+            </td>
+            
+          </tr>
+          
+          <tr class="bg-white">
+            
+            <td class="p-4 font-semibold text-slate-700">
+              Conditionnement <span class="color-time">t</span>
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Addition d\'embeddings dans les blocs
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Modulation adaLN-Zero (\(\gamma_t, \beta_t, \alpha\))
+            </td>
+            
+          </tr>
+          
+          <tr class="bg-slate-50">
+            
+            <td class="p-4 font-semibold text-slate-700">
+              Passage à l'échelle
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Gains irréguliers, peu prévisibles
+            </td>
+            
+            <td class="p-4 text-slate-600">
+              Loi d\'échelle nette : + de calcul ⇒ – de FID
+            </td>
+            
+          </tr>
+          
+          <tr class="bg-white">
+            
+            <td class="p-4 font-semibold text-slate-700">Coût de calcul</td>
+            
+            <td class="p-4 text-slate-600">Linéaire en taille d\'entrée</td>
+            
+            <td class="p-4 text-slate-600">
+              Quadratique en nombre de tokens, \(\mathcal{O}(n^2)\)
+            </td>
+            
+          </tr>
+          
+        </tbody>
+        
+      </table>
+      
+    </div>
+    
+    <!-- C. Pourquoi il est passé devant -->
+    <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-3">
+      <span
+        class="bg-violet-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
+        >C</span
+      >
+      Pourquoi le DiT est passé devant
+    </h3>
+    
+    <div class="space-y-5 text-slate-700 mb-8">
+      
+      <p>
+        <strong>1. La loi d\'échelle (l'argument décisif).</strong> Peebles
+        &amp; Xie (<em>Scalable Diffusion Models with Transformers</em>, ICCV
+        2023) ont montré que la qualité de génération, mesurée par le FID,
+        <strong>décroît de façon monotone et prévisible</strong> à mesure qu\'on
+        augmente la puissance de calcul du réseau (les Gflops). Leur plus gros
+        modèle, DiT-XL/2, a établi un FID de référence de \(\approx 2{,}27\)
+        sur ImageNet 256×256, <strong>battant les meilleurs U-Net</strong> de
+        l'époque. Le U-Net, lui, n\'offre pas cette montée en charge régulière
+        : rien ne garantit qu\'un U-Net deux fois plus gros sera meilleur.
+      </p>
+      
+      <p>
+        <strong>2. Moins de biais inductif, plus de données.</strong> La
+        convolution impose <em>a priori</em> que ce qui compte est local. C\'est
+        précieux quand les données sont rares, mais limitant à grande échelle.
+        Le Transformer ne présuppose rien : avec assez de données, il
+        <strong>apprend lui-même</strong> les dépendances pertinentes — y
+        compris à longue portée, comme le couplage entre le pic du matin et
+        celui du soir d\'une courbe RTE.
+      </p>
+      
+      <p>
+        <strong>3. Une brique universelle.</strong> En adoptant le Transformer,
+        la diffusion hérite gratuitement de tout l'écosystème de l'attention :
+        variantes efficaces, recettes d\'optimisation, parallélisation
+        matérielle. Une seule brique, répétée \(N\) fois, au lieu d\'une
+        architecture sur-mesure.
+      </p>
+      
+      <p>
+        <strong>4. La validation par l'industrie.</strong> Le squelette de type
+        DiT est aujourd\'hui au cœur des modèles génératifs de pointe :
+        <strong>Stable Diffusion 3</strong> (MM-DiT), <strong>PixArt-α</strong>,
+        <strong>Sora</strong> (vidéo) ou <strong>Flux</strong> reposent tous sur
+        un Transformer de diffusion plutôt que sur un U-Net.
+      </p>
+      
+    </div>
+    
+    <div
+      class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm"
+    >
+      
+      <h4
+        class="font-bold text-emerald-900 mb-3 uppercase tracking-wide text-xs"
+      >
+        Et pour nos séries RTE de 48 pas ?
+      </h4>
+      
+      <p class="text-sm text-emerald-800 leading-relaxed">
+        Le coût quadratique \(\mathcal{O}(n^2)\) de l'attention est le talon
+        d\'Achille du Transformer sur les images haute résolution (d\'où le
+        recours à un espace latent). Mais ici, après patchification, la séquence
+        ne compte qu\'\(\approx 24\) tokens : ce coût est
+        <strong>négligeable</strong>. On profite donc du champ réceptif global —
+        idéal pour capter la périodicité journalière et le couplage matin/soir —
+        <strong>sans payer la facture</strong> qui pénalise le DiT sur les
+        grandes images. Pour ce problème précis, le Transformer offre le
+        meilleur des deux mondes.
+      </p>
+      
+    </div>
+    
+  </section>
+  
+  <!-- l'encodage et l'architecture interne -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+    
+    <h2
+      class="text-3xl font-black text-slate-800 mb-8 border-b-2 border-slate-100 pb-4"
+    >
+      Architecture Interne : Le traitement de la donnée
+    </h2>
+    
+    <!-- Equation 5 : Positional Encoding -->
+    <div class="mb-12">
+      
+      <div class="flex items-center justify-between mb-4">
+        
+        <h3 class="text-2xl font-bold text-slate-700 flex items-center gap-3">
+          <span
+            class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm"
+            >4</span
+          >
+          l'Encodage Positionnel (Sine/Cosine)
+        </h3>
+        
+      </div>
+      
+      <p class="text-slate-600 mb-4">
+        La consommation électrique est séquentielle. Mais un Transformer traite
+        toutes les données simultanément. l'encodage positionnel permet
+        d\'inscrire la position temporelle dans chaque point de donnée.
+      </p>
+       
+      <div class="math-box text-xl text-center">
+         $$ PE_{(p, 2i)} = \sin\left(\frac{p}{10000^{2i/D}}\right) \quad
+        \text{et} \quad PE_{(p, 2i+1)} =
+        \cos\left(\frac{p}{10000^{2i/D}}\right) $$
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-8 mt-6">
+        
+        <div class="text-sm text-slate-700 space-y-3">
+          
+          <p>
+            <strong>Patchification :</strong> La série de 48 points est découpée
+            en "patches" de taille \(P=2\) (1 heure entière). On obtient donc
+            \(p \in [0, 23]\) tokens.
+          </p>
+          
+          <p>
+            <strong>Dimension cachée :</strong> Chaque patch est projeté dans un
+            espace de taille \(D=256\). l'indice \(i\) parcourt ces 256
+            dimensions.
+          </p>
+          
+          <p>
+            <strong>Basses et hautes fréquences :</strong> Les premières
+            dimensions oscillent très vite (pour différencier 10h de 11h), les
+            dernières très lentement (pour différencier le matin du soir).
+          </p>
+          
+        </div>
+        
+        <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-xl">
+          
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+            >Analogie</span
+          >
+          <h4 class="font-bold text-slate-800 mb-2">l'Orchestration</h4>
+          
+          <p class="text-slate-600 text-sm">
+            l'encodage positionnel agit comme un accord musical plaqué sur
+            chaque heure. Les fréquences aiguës (sinus rapides) donnent l'heure
+            précise (ex: la minute). Les fréquences basses donnent le contexte
+            global (ex: "nous sommes l'après-midi").
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <!-- Equation 6 : adaLN -->
+    <div>
+      
+      <div class="flex items-center justify-between mb-4">
+        
+        <h3 class="text-2xl font-bold text-slate-700 flex items-center gap-3">
+          <span
+            class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm"
+            >5</span
+          >
+          Le Bloc DiT et l'adaLN-Zero
+        </h3>
+        
+      </div>
+      
+      <p class="text-slate-600 mb-4">
+        C\'est ici que l'information du temps
+        <span class="color-time">t</span> est injectée pour modifier le
+        comportement des couches d\'Attention et du réseau MLP.
+      </p>
+       
+      <div class="math-box text-2xl text-center">
+         $$ \color{#10b981}{x_{l+1}} = \color{#10b981}{x_l} +
+        \color{#ef4444}{\alpha} \cdot
+        \text{Layer}(\color{#8b5cf6}{\gamma_t} \odot \hat{h}_l +
+        \color{#8b5cf6}{\beta_t}) $$
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-8 mt-6">
+        
+        <div class="text-sm text-slate-700 space-y-4">
+          
+          <p>
+            <strong>Adaptive Layer Norm (adaLN) :</strong> Au lieu d\'utiliser
+            des paramètres de normalisation appris globaux, le pas de temps
+            <span class="color-time">t</span> traverse un réseau MLP pour
+            générer dynamiquement l'échelle (\(\gamma_t\)) et le biais
+            (\(\beta_t\)). Le réseau s\'adapte ainsi à son étape de
+            débruitage.
+          </p>
+          
+          <p>
+            <strong>l'initialisation Zero (\(\alpha\)) :</strong> Le
+            paramètre \(\alpha\) est forcé à zéro au début de
+            l'entraînement. Ainsi, \(\color{#10b981}{x_{l+1}} =
+            \color{#10b981}{x_l}\). Cette contrainte garantit une stabilité
+            structurelle : le modèle préserve le signal avant d\'apprendre
+            progressivement ses modifications.
+          </p>
+          
+        </div>
+        
+        <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-xl">
+          
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+            >Analogie</span
+          >
+          <h4 class="font-bold text-slate-800 mb-2">
+            l'Apprentissage par Observation
+          </h4>
+          
+          <p class="text-slate-600 text-sm">
+            Le réseau est comme un apprenti (\(\alpha = 0\)). Au début, il se
+            contente d\'observer les processus sans interférer (identité).
+            Progressivement, à mesure que l'erreur se stabilise (gradients
+            stables), il est autorisé à ajuster ses paramètres (\(\alpha\)
+            grandit), évitant ainsi de perturber le système lors des premières
+            itérations.
+          </p>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+  </section>
+  
+  <!-- Equation: Reverse Process -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative border-t-8 border-t-emerald-500"
+  >
+    
+    <div
+      class="absolute -left-4 top-10 bg-emerald-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      6
+    </div>
+     
+    <div class="mb-6">
+      
+      <h2 class="text-3xl font-black text-slate-800">
+        l'Étape de Génération (Reverse Loop)
+      </h2>
+      
+      <p class="text-slate-500 mt-2 text-lg">
+        La création d\'une courbe synthétique RTE à partir du bruit.
+      </p>
+      
+    </div>
+     
+    <div class="math-box text-xl text-center">
+       $$ \mu_t = \frac{1}{\sqrt{\alpha_t}} \left( \color{#10b981}{x_t}
+      -
+      \frac{\color{#ef4444}{\beta_t}}{\sqrt{1-\color{#ef4444}{\bar{\alpha}_t}}}
+      \color{#ef4444}{\epsilon}_{\color{#8b5cf6}{\theta}}(\color{#10b981}{x_t},
+      \color{#3b82f6}{t}) \right) $$ <br /> $$ \color{#10b981}{x_{t-1}} =
+      \mu_t + \sigma_t z \quad \text{où} \quad z \sim \mathcal{N}(0,I)
+      $$
+    </div>
+    
+    <div class="deep-dive mb-8">
+      
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Deep Dive : l'Algorithme de Débruitage
+      </h4>
+      
+      <p class="text-sm text-slate-600">
+        En phase d\'inférence, l'initialisation commence par un bruit pur
+        \(x_{1000} \sim \mathcal{N}(0,I)\). Pour obtenir \(x_{999}\),
+        \(x_{998}\), etc., le modèle estime le bruit
+        (\(\epsilon_\theta\)). Une fraction de ce bruit est mathématiquement
+        soustraite (calcul de \(\mu_t\)). <br /><strong
+          >Indispensable :</strong
+        >
+        l'addition d\'une variance aléatoire \(z\). Ce terme d\'exploration
+        (Dynamique de Langevin) prévient le lissage excessif de la courbe,
+        garantissant la présence des variations asymétriques inhérentes aux
+        charges électriques.
+      </p>
+      
+    </div>
+    
+    <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200">
+      
+      <h4
+        class="font-bold text-emerald-900 mb-3 text-lg uppercase tracking-wide text-xs"
+      >
+        La Boucle Algorithmique (Inférence)
+      </h4>
+      
+      <pre
+        class="bg-slate-800 text-emerald-400 p-4 rounded-xl text-sm font-mono overflow-x-auto"
+      >
+        // Initialisation avec du bruit purx_t = randn(48_demi_heures) for t = 1000 down to 1:    // 1. Le DiT prédit l'empreinte du bruit    eps_pred = DiT(x_t, t)         // 2. On retire mathématiquement le bruit estimé    mu = (1/sqrt(alpha[t])) * (x_t - (beta[t]/sqrt(1-alpha_bar[t])) * eps_pred)        // 3. On ajoute la variance stochastique (sauf à la dernière étape)    if t > 1:        z = randn(48)        x_t = mu + sqrt(beta[t]) * z    else:        x_t = mu // La courbe finale générée x_0                </pre
+      >
+      
+    </div>
+    
+  </section>
+  
+  <!-- EMA Section -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+    
+    <h2 class="text-3xl font-black text-slate-800 mb-4">
+      La Modélisation Continue : l'EMA
+    </h2>
+    
+    <p class="text-slate-600 mb-6">
+      l'utilisation des poids d\'entraînement bruts pour la génération conduit
+      souvent à des artefacts. La moyenne mobile exponentielle assure la
+      stabilité.
+    </p>
+     
+    <div class="math-box text-xl text-center mb-8">
+       $$ \color{#8b5cf6}{\theta_t^{EMA}} = 0.999 \cdot
+      \color{#8b5cf6}{\theta_{t-1}^{EMA}} + 0.001 \cdot
+      \color{#8b5cf6}{\theta_{batch\_actuel}} $$
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      
+      <div class="text-sm text-slate-700 space-y-4">
+        
+        <p>
+          <strong>Moyenne Mobile Exponentielle (EMA) :</strong> Parallèlement
+          aux paramètres du modèle soumis aux gradients, une version secondaire
+          des poids est conservée, évoluant avec une grande inertie.
+        </p>
+        
+        <p>
+          Avec \(\lambda = 0.999\), l'EMA agit comme un filtre passe-bas sur
+          l'historique des ~1000 dernières itérations. Elle atténue la variance
+          liée aux lots d\'entraînement atypiques.
+        </p>
+        
+        <p class="text-emerald-700 font-bold">
+          l'algorithme de génération inverse utilise exclusivement les poids
+          EMA.
+        </p>
+        
+      </div>
+      
+      <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-xl">
+        
+        <span
+          class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+          >Analogie</span
+        >
+        <h4 class="font-bold text-slate-800 mb-2">
+          La Synthèse de l'Information
+        </h4>
+        
+        <p class="text-slate-600 text-sm">
+          Le modèle principal (\(\theta\)) réagit instantanément à la
+          dernière information traitée, modifiant ses paramètres de façon
+          abrupte. l'EMA représente l'expérience consolidée : elle observe ces
+          variations mais ne retient que la tendance de fond, offrant un
+          jugement bien plus équilibré lors de la génération finale.
+        </p>
+        
+      </div>
+      
+    </div>
+     //
+  </section>
+</main>
