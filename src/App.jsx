@@ -128,7 +128,6 @@ function Intro({ go }) {
 
         <div className="choice-grid">
           <button className="choice c-course fade" style={{ animationDelay: "460ms" }} onClick={() => go("cours")}>
-            <div className="choice-glow" />
             <div className="choice-top">
               <div className="choice-ico"><BookOpen size={22} /></div>
               <h3>Le Cours</h3>
@@ -138,7 +137,6 @@ function Intro({ go }) {
           </button>
 
           <button className="choice c-story fade" style={{ animationDelay: "530ms" }} onClick={() => go("histoire")}>
-            <div className="choice-glow" />
             <div className="choice-top">
               <div className="choice-ico"><Feather size={22} /></div>
               <h3>L'Histoire illustrée</h3>
