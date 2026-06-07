@@ -317,9 +317,22 @@ function EndCTA({ go }) {
 export default function App() {
   const [view, setView] = useState("intro");
   const go = (v) => { window.scrollTo(0, 0); setView(v); };
+  const [theme, setTheme] = useState('dark');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   return (
     <div className="app-root">
+      <button onClick={toggleTheme} className="theme-toggle">
+        Passer en mode {theme === 'light' ? 'sombre' : 'clair'}
+      </button>
       <style>{APP_CSS}</style>
       {view !== "intro" && <TopBar view={view} go={go} />}
       <main>
