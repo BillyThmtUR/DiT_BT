@@ -111,28 +111,6 @@
     ]
   },
   {
-    "id": "unet",
-    "title": "U-Net: Convolutional Networks for Biomedical Image Segmentation",
-    "authors": "Olaf Ronneberger, Philipp Fischer, Thomas Brox",
-    "year": 2015,
-    "venue": "MICCAI 2015",
-    "arxiv_id": "1505.04597",
-    "pdf_url": "https://arxiv.org/pdf/1505.04597.pdf",
-    "filename": "ronneberger-et-al-2015-unet.pdf",
-    "course_mention": "Section « Le Mécanisme Transformer », encart « Ni convolution, ni U-Net » : « Contrairement aux modèles de diffusion historiques bâtis sur un U-Net convolutif, le DiT remplace intégralement ce squelette par une pile de Transformers. »",
-    "highlights": [
-      {
-        "course_section": "Ni convolution, ni U-Net",
-        "search_text": [
-          "contracting path",
-          "u-shaped architecture",
-          "Convolutional Networks for Biomedical Image Segmentation"
-        ],
-        "course_excerpt": "COURS - Ni convolution, ni U-Net : Contrairement aux modeles de diffusion historiques batis sur un U-Net convolutif (architecture encodeur/decodeur en U avec skip-connections, Ronneberger et al. 2015), le DiT remplace integralement ce squelette par une pile de Transformers homogenes."
-      }
-    ]
-  },
-  {
     "id": "latent-diffusion",
     "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
     "authors": "Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, Björn Ommer",
@@ -155,50 +133,6 @@
     ]
   },
   {
-    "id": "sd3-mmdit",
-    "title": "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis",
-    "authors": "Patrick Esser, Sumith Kulal, Andreas Blattmann, Rahim Entezari, Jonas Müller, Harry Saini, Yam Levi, Dominik Lorenz, Axel Sauer, Frederic Boesel, Dustin Podell, Tim Dockhorn, Zion English, Kyle Lacey, Alex Goodwin, Yannik Marek, Robin Rombach",
-    "year": 2024,
-    "venue": "ICML 2024",
-    "arxiv_id": "2403.03206",
-    "pdf_url": "https://arxiv.org/pdf/2403.03206.pdf",
-    "filename": "esser-et-al-2024-sd3-mmdit.pdf",
-    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « Stable Diffusion 3 (MM-DiT), PixArt-α, Sora (vidéo) ou Flux reposent tous sur un Transformer de diffusion plutôt que sur un U-Net. »",
-    "highlights": [
-      {
-        "course_section": "Pourquoi le DiT est passe devant (4. La validation par l'industrie)",
-        "search_text": [
-          "rectified flow",
-          "Multimodal Diffusion Transformer",
-          "MM-DiT"
-        ],
-        "course_excerpt": "COURS - La validation par l'industrie : Le squelette de type DiT est aujourd'hui au coeur des modeles generatifs de pointe : Stable Diffusion 3 (architecture MM-DiT, Esser et al. 2024) combine deux flux de Transformers (texte et image) modules par adaLN, exactement le bloc DiT de l'Equation 5 generalise a deux modalites."
-      }
-    ]
-  },
-  {
-    "id": "pixart-alpha",
-    "title": "PixArt-α: Fast Training of Diffusion Transformer for Photorealistic Text-to-Image Synthesis",
-    "authors": "Junsong Chen, Jincheng Yu, Chongjian Ge, Lewei Yao, Enze Xie, Yue Wu, Zhongdao Wang, James Kwok, Ping Luo, Huchuan Lu, Zhenguo Li",
-    "year": 2023,
-    "venue": "ICLR 2024 (arXiv 2023)",
-    "arxiv_id": "2310.00426",
-    "pdf_url": "https://arxiv.org/pdf/2310.00426.pdf",
-    "filename": "chen-et-al-2023-pixart-alpha.pdf",
-    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 (validation par l'industrie).",
-    "highlights": [
-      {
-        "course_section": "Pourquoi le DiT est passe devant (4. La validation par l'industrie)",
-        "search_text": [
-          "Diffusion Transformer",
-          "text-to-image",
-          "PixArt"
-        ],
-        "course_excerpt": "COURS - La validation par l'industrie : PixArt-alpha (Chen et al. 2023) demontre qu'un DiT de type Peebles & Xie peut etre entraine pour la generation texte-image a une fraction du cout de calcul des modeles equivalents, en reutilisant tel quel le bloc adaLN-Zero de l'Equation 5."
-      }
-    ]
-  },
-  {
     "id": "classifier-free-guidance",
     "title": "Classifier-Free Diffusion Guidance",
     "authors": "Jonathan Ho, Tim Salimans",
@@ -217,50 +151,6 @@
           "guidance scale"
         ],
         "course_excerpt": "COURS - Une guidance plus simple : Ces modeles combinent souvent le DiT avec la guidance sans classifieur (classifier-free guidance) de Ho & Salimans (2022) : en melangeant une prediction conditionnelle et une prediction non-conditionnelle de epsilon_theta(x_t,t), on renforce l'adherence au conditionnement (texte, ou pour nos courbes RTE : jour de semaine, saison, meteo) sans entrainer de reseau classifieur separe."
-      }
-    ]
-  },
-  {
-    "id": "fid",
-    "title": "GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium",
-    "authors": "Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter",
-    "year": 2017,
-    "venue": "NeurIPS 2017",
-    "arxiv_id": "1706.08500",
-    "pdf_url": "https://arxiv.org/pdf/1706.08500.pdf",
-    "filename": "heusel-et-al-2017-fid.pdf",
-    "course_mention": "Section « Pourquoi le DiT est passé devant », point 1 : « ... la qualité de génération, mesurée par le FID (Fréchet Inception Distance) ... »",
-    "highlights": [
-      {
-        "course_section": "Pourquoi le DiT est passe devant (1. La loi d'echelle)",
-        "search_text": [
-          "Fréchet Inception Distance",
-          "Frechet Inception Distance",
-          "Two Time-Scale Update Rule"
-        ],
-        "course_excerpt": "COURS - La loi d'echelle : Peebles & Xie (2023) ont montre que la qualite de generation, mesuree par le FID (Frechet Inception Distance, Heusel et al. 2017), decroit de facon monotone et previsible a mesure qu'on augmente la puissance de calcul du reseau (les Gflops). Leur plus gros modele, DiT-XL/2, a etabli un FID de reference d'environ 2.27 sur ImageNet 256x256."
-      }
-    ]
-  },
-  {
-    "id": "vit",
-    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
-    "authors": "Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby",
-    "year": 2020,
-    "venue": "ICLR 2021 (arXiv 2020)",
-    "arxiv_id": "2010.11929",
-    "pdf_url": "https://arxiv.org/pdf/2010.11929.pdf",
-    "filename": "dosovitskiy-et-al-2020-vit.pdf",
-    "course_mention": "Section « l'Encodage Positionnel (Sine/Cosine) », bloc « Patchification » : « Cette idée de découper l'entrée en patches projetés linéairement est directement héritée des Vision Transformers (ViT, Dosovitskiy et al., 2020). »",
-    "highlights": [
-      {
-        "course_section": "Patchification (Equation 4)",
-        "search_text": [
-          "16x16 Words",
-          "sequences of image patches",
-          "Vision Transformer"
-        ],
-        "course_excerpt": "COURS - Patchification : La serie de 48 points est decoupee en patches de taille P=2 (1 heure entiere), donnant p dans [0,23] tokens. Cette idee de decouper l'entree en patches projetes lineairement est directement heritee des Vision Transformers (ViT, Dosovitskiy et al. 2020), qui ont montre qu'un Transformer applique directement a des sequences de patches d'image rivalise avec les CNN."
       }
     ]
   },
@@ -437,6 +327,116 @@
           "time series imputation"
         ],
         "course_excerpt": "COURS - Pour aller plus loin (SSSD, Alcaraz & Strodthoff 2022) : remplace le reseau de debruitage par des modeles a espace d'etat structure (S4), efficaces sur les sequences longues : une alternative a l'attention pour des courbes RTE a tres haute resolution temporelle."
+      }
+    ]
+  },
+  {
+    "id": "informer",
+    "title": "Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting",
+    "authors": "Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, Wancai Zhang",
+    "year": 2021,
+    "venue": "AAAI 2021",
+    "arxiv_id": "2012.07436",
+    "pdf_url": "https://arxiv.org/pdf/2012.07436.pdf",
+    "filename": "zhou-et-al-2021-informer.pdf",
+    "course_mention": "Section « Le Mécanisme Transformer », après le tableau « Face à face U-Net vs DiT » : « Informer (Zhou et al., 2021) réduit le coût O(n²) de l'attention via une attention ProbSparse ... validé sur des jeux de données de consommation électrique (ECL, ETT). »",
+    "highlights": [
+      {
+        "course_section": "Face a face U-Net vs DiT - Transformers pour series longues",
+        "search_text": [
+          "ProbSparse",
+          "Long Sequence Time-Series Forecasting",
+          "Electricity Transformer"
+        ],
+        "course_excerpt": "COURS - D'autres Transformers s'attaquent directement a la prevision de series temporelles longues : Informer (Zhou et al. 2021) reduit le cout O(n^2) de l'attention via une attention ProbSparse, valide sur des jeux de donnees de consommation electrique (ECL, ETT) - proches en nature de nos courbes RTE."
+      }
+    ]
+  },
+  {
+    "id": "autoformer",
+    "title": "Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting",
+    "authors": "Haixu Wu, Jiehui Xu, Jianmin Wang, Mingsheng Long",
+    "year": 2021,
+    "venue": "NeurIPS 2021",
+    "arxiv_id": "2106.13008",
+    "pdf_url": "https://arxiv.org/pdf/2106.13008.pdf",
+    "filename": "wu-et-al-2021-autoformer.pdf",
+    "course_mention": "Section « Le Mécanisme Transformer », après le tableau « Face à face U-Net vs DiT » : « ... Autoformer (Wu et al., 2021) remplace l'attention point-à-point par une corrélation automatique entre sous-séquences. »",
+    "highlights": [
+      {
+        "course_section": "Face a face U-Net vs DiT - Transformers pour series longues",
+        "search_text": [
+          "Auto-Correlation",
+          "Decomposition Transformers",
+          "long-term series forecasting"
+        ],
+        "course_excerpt": "COURS - D'autres Transformers s'attaquent directement a la prevision de series temporelles longues : Autoformer (Wu et al. 2021) remplace l'attention point-a-point par une correlation automatique entre sous-sequences, valide sur des jeux de donnees de consommation electrique (ECL, ETT) - proches en nature de nos courbes RTE."
+      }
+    ]
+  },
+  {
+    "id": "renewable-gan",
+    "title": "Model-Free Renewable Scenario Generation Using Generative Adversarial Networks",
+    "authors": "Yize Chen, Yishen Wang, Daniel Kirschen, Baosen Zhang",
+    "year": 2018,
+    "venue": "IEEE Transactions on Power Systems",
+    "arxiv_id": "1707.09676",
+    "pdf_url": "https://arxiv.org/pdf/1707.09676.pdf",
+    "filename": "chen-et-al-2018-renewable-gan.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 1 : « Pour la génération de séries électriques, l'enjeu est similaire : les GAN de scénarios renouvelables (Chen et al., 2018) produisaient déjà des courbes synthétiques de production éolienne ou solaire réalistes... »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (1. La loi d'echelle)",
+        "search_text": [
+          "renewable scenario",
+          "Generative Adversarial Networks",
+          "wind and solar"
+        ],
+        "course_excerpt": "COURS - La loi d'echelle : Le U-Net n'offre pas de montee en charge reguliere : rien ne garantit qu'un U-Net deux fois plus gros sera meilleur. Pour la generation de series electriques, l'enjeu est similaire : les GAN de scenarios renouvelables (Chen et al. 2018) produisaient deja des courbes synthetiques de production eolienne ou solaire realistes, mais sans la loi d'echelle previsible qui caracterise les architectures de type Transformer."
+      }
+    ]
+  },
+  {
+    "id": "diffload",
+    "title": "DiffLoad: Uncertainty Quantification in Energy Load Forecasting with Diffusion Model",
+    "authors": "Zhixian Wang, Qingsong Wen, Chaoli Zhang, Liang Sun, Yi Wang",
+    "year": 2023,
+    "venue": "arXiv 2023",
+    "arxiv_id": "2306.01001",
+    "pdf_url": "https://arxiv.org/pdf/2306.01001.pdf",
+    "filename": "wang-et-al-2023-diffload.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « DiffLoad (Wang et al., 2023) l'utilise pour la prévision de charge avec quantification de l'incertitude... »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (4. La validation par le domaine de l'energie)",
+        "search_text": [
+          "uncertainty quantification",
+          "load forecasting",
+          "diffusion model"
+        ],
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : Au-dela de l'image, le squelette diffusion + Transformer est desormais applique directement aux series electriques : DiffLoad (Wang et al. 2023) l'utilise pour la prevision de charge avec quantification de l'incertitude, separant l'incertitude epistemique (modele) de l'incertitude aleatoire (donnees) - une question centrale pour la planification du reseau RTE."
+      }
+    ]
+  },
+  {
+    "id": "diffstg",
+    "title": "DiffSTG: Probabilistic Spatio-Temporal Graph Forecasting with Denoising Diffusion Models",
+    "authors": "Haomin Wen, Youfang Lin, Yutong Xia, Huaiyu Wan, Qingsong Wen, Roger Zimmermann, Yuxuan Liang",
+    "year": 2023,
+    "venue": "SIGSPATIAL 2023",
+    "arxiv_id": "2301.13629",
+    "pdf_url": "https://arxiv.org/pdf/2301.13629.pdf",
+    "filename": "wen-et-al-2023-diffstg.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « ... DiffSTG (Wen et al., 2023) l'étend à un réseau entier de capteurs (plusieurs postes RTE simultanément), en remplaçant le U-Net spatio-temporel par un Transformer de diffusion. »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (4. La validation par le domaine de l'energie)",
+        "search_text": [
+          "spatio-temporal graph",
+          "denoising diffusion",
+          "graph neural network"
+        ],
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : DiffSTG (Wen et al. 2023) etend le schema de diffusion a un reseau entier de capteurs spatio-temporels (par exemple plusieurs postes RTE simultanement), en combinant un graphe (relations spatiales entre postes) avec le meme schema forward/reverse que les Equations 1 et 6 de ce cours, le U-Net spatio-temporel etant ici remplace par un reseau de type Transformer."
       }
     ]
   }

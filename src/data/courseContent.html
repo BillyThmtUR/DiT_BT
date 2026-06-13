@@ -209,7 +209,7 @@
           
           <p class="text-indigo-800 text-sm mt-2 leading-relaxed">
             Contrairement aux modèles de diffusion historiques bâtis sur un
-            <strong><a class="ref-link" href="/reference/ronneberger-et-al-2015-unet.pdf" target="_blank" rel="noopener noreferrer">U-Net convolutif</a></strong>, le DiT remplace intégralement ce
+            <strong>U-Net convolutif</strong>, le DiT remplace intégralement ce
             squelette par une pile de <strong>Transformers</strong>. La section
             dédiée détaille pourquoi ce choix l'a emporté.
           </p>
@@ -1032,9 +1032,22 @@
         </tbody>
         
       </table>
-      
+
     </div>
-    
+
+    <p class="text-slate-600 mb-8">
+      D\'autres Transformers s\'attaquent directement à la prévision de séries
+      temporelles longues :
+      <a class="ref-link" href="/reference/zhou-et-al-2021-informer.pdf" target="_blank" rel="noopener noreferrer">Informer (Zhou et al., 2021)</a>
+      réduit le coût \(\mathcal{O}(n^2)\) de l\'attention via une attention
+      « ProbSparse », et
+      <a class="ref-link" href="/reference/wu-et-al-2021-autoformer.pdf" target="_blank" rel="noopener noreferrer">Autoformer (Wu et al., 2021)</a>
+      remplace l\'attention point-à-point par une corrélation automatique entre
+      sous-séquences. Les deux sont validés sur des jeux de données de
+      consommation électrique (ECL, ETT) — proches en nature de nos courbes
+      RTE.
+    </p>
+
     <!-- C. Pourquoi il est passé devant -->
     <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-3">
       <span
@@ -1049,14 +1062,19 @@
       <p>
         <strong>1. La loi d\'échelle (l'argument décisif).</strong>
         <a class="ref-link" href="/reference/peebles-xie-2023-dit.pdf" target="_blank" rel="noopener noreferrer">Peebles &amp; Xie (<em>Scalable Diffusion Models with Transformers</em>, ICCV 2023)</a>
-        ont montré que la qualité de génération, mesurée par le
-        <a class="ref-link" href="/reference/heusel-et-al-2017-fid.pdf" target="_blank" rel="noopener noreferrer">FID (Fréchet Inception Distance)</a>,
+        ont montré que la qualité de génération, mesurée par le FID (Fréchet
+        Inception Distance),
         <strong>décroît de façon monotone et prévisible</strong> à mesure qu\'on
         augmente la puissance de calcul du réseau (les Gflops). Leur plus gros
         modèle, DiT-XL/2, a établi un FID de référence de \(\approx 2{,}27\)
         sur ImageNet 256×256, <strong>battant les meilleurs U-Net</strong> de
         l'époque. Le U-Net, lui, n\'offre pas cette montée en charge régulière
-        : rien ne garantit qu\'un U-Net deux fois plus gros sera meilleur.
+        : rien ne garantit qu\'un U-Net deux fois plus gros sera meilleur. Pour
+        la génération de séries électriques, l\'enjeu est similaire : les
+        <a class="ref-link" href="/reference/chen-et-al-2018-renewable-gan.pdf" target="_blank" rel="noopener noreferrer">GAN de scénarios renouvelables (Chen et al., 2018)</a>
+        produisaient déjà des courbes synthétiques de production éolienne ou
+        solaire réalistes, mais sans la loi d\'échelle prévisible qui
+        caractérise les architectures de type Transformer.
       </p>
       
       <p>
@@ -1078,11 +1096,16 @@
       </p>
       
       <p>
-        <strong>4. La validation par l'industrie.</strong> Le squelette de type
-        DiT est aujourd\'hui au cœur des modèles génératifs de pointe :
-        <strong><a class="ref-link" href="/reference/esser-et-al-2024-sd3-mmdit.pdf" target="_blank" rel="noopener noreferrer">Stable Diffusion 3</a></strong> (MM-DiT), <strong><a class="ref-link" href="/reference/chen-et-al-2023-pixart-alpha.pdf" target="_blank" rel="noopener noreferrer">PixArt-α</a></strong>,
-        <strong>Sora</strong> (vidéo) ou <strong>Flux</strong> reposent tous sur
-        un Transformer de diffusion plutôt que sur un U-Net.
+        <strong>4. La validation par le domaine de l'énergie.</strong> Au-delà
+        de l'image, le squelette « diffusion + Transformer » est désormais
+        appliqué directement aux séries électriques :
+        <a class="ref-link" href="/reference/wang-et-al-2023-diffload.pdf" target="_blank" rel="noopener noreferrer">DiffLoad (Wang et al., 2023)</a>
+        l\'utilise pour la prévision de charge avec quantification de
+        l\'incertitude, et
+        <a class="ref-link" href="/reference/wen-et-al-2023-diffstg.pdf" target="_blank" rel="noopener noreferrer">DiffSTG (Wen et al., 2023)</a>
+        l\'étend à un réseau entier de capteurs (plusieurs postes RTE
+        simultanément), en remplaçant le U-Net spatio-temporel par un
+        Transformer de diffusion.
       </p>
 
       <p>
@@ -1170,9 +1193,7 @@
           <p>
             <strong>Patchification :</strong> La série de 48 points est découpée
             en "patches" de taille \(P=2\) (1 heure entière). On obtient donc
-            \(p \in [0, 23]\) tokens. Cette idée de découper l\'entrée en
-            patches projetés linéairement est directement héritée des
-            <a class="ref-link" href="/reference/dosovitskiy-et-al-2020-vit.pdf" target="_blank" rel="noopener noreferrer">Vision Transformers (ViT, Dosovitskiy et al., 2020)</a>.
+            \(p \in [0, 23]\) tokens.
           </p>
           
           <p>
