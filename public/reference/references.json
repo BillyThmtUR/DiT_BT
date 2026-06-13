@@ -1,0 +1,81 @@
+[
+  {
+    "id": "ddpm",
+    "title": "Denoising Diffusion Probabilistic Models",
+    "authors": "Jonathan Ho, Ajay Jain, Pieter Abbeel",
+    "year": 2020,
+    "venue": "NeurIPS 2020",
+    "arxiv_id": "2006.11239",
+    "pdf_url": "https://arxiv.org/pdf/2006.11239.pdf",
+    "filename": "ho-jain-abbeel-2020-ddpm.pdf",
+    "course_mention": "Section « La Fonction de Perte (l'Apprentissage) » (Équation 3) : « Mais l'article fondateur DDPM, Ho et al. (2020) a prouvé qu'il est mathématiquement plus stable de prédire epsilon (le bruit ajouté). »",
+    "highlights": [
+      {
+        "course_section": "Equation 1 — Le Processus Forward (Bruitage de Markov)",
+        "search_text": ["is a Markov chain", "Markov chain", "2 Background"],
+        "course_excerpt": "COURS - Equation 1 (Processus Forward) : q(x_t | x_{t-1}) = N(x_t ; sqrt(1-beta_t) x_{t-1}, beta_t I). Cette equation est une Chaine de Markov : l'etat x_t ne depend QUE de x_{t-1}. La moyenne de la gaussienne est legerement retrecie par le facteur sqrt(1-beta_t) pour eviter que la variance totale de la serie (amplitude max RTE : 13 325 kWh) ne diverge vers l'infini au fil des etapes."
+      },
+      {
+        "course_section": "Equation 2 — Le Saut Temporel (Trick de Reparametrisation)",
+        "search_text": ["arbitrary timestep", "closed form", "Forward process and L"],
+        "course_excerpt": "COURS - Equation 2 (Trick de reparametrisation) : x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) epsilon. En deroulant la recurrence jusqu'a l'etape 0, on accumule tous les alpha_i dans le produit cumulatif alpha_bar_t = produit(alpha_i), ce qui permet d'obtenir x_t directement depuis x_0 en O(1), sans simuler les 1000 etapes de bruitage une par une."
+      },
+      {
+        "course_section": "Equation 3 — La Fonction de Perte (l'Apprentissage)",
+        "search_text": ["Simplified training objective", "simplified objective", "predict the noise"],
+        "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. L'article fondateur DDPM (Ho et al.) a prouve qu'il est mathematiquement plus stable de predire epsilon (le bruit ajoute) que x_0 (la courbe sans bruit) : le bruit a toujours la meme distribution gaussienne centree reduite, ce qui rend les gradients d'entrainement plus lisses et previsibles que d'essayer de predire des pics de consommation erratiques."
+      },
+      {
+        "course_section": "Equation 6 — l'Etape de Generation (Reverse Loop)",
+        "search_text": ["Langevin dynamics", "ancestral sampling", "3.2 Reverse process"],
+        "course_excerpt": "COURS - Equation 6 (Reverse Loop / generation) : mu_t = (1/sqrt(alpha_t)) (x_t - (beta_t/sqrt(1-alpha_bar_t)) epsilon_theta(x_t,t)) puis x_{t-1} = mu_t + sigma_t z avec z ~ N(0,I). L'addition du terme stochastique sigma_t z (dynamique de Langevin) est indispensable : elle previent le lissage excessif de la courbe et garantit la presence des variations asymetriques inherentes aux charges electriques RTE."
+      }
+    ]
+  },
+  {
+    "id": "dit",
+    "title": "Scalable Diffusion Models with Transformers",
+    "authors": "William Peebles, Saining Xie",
+    "year": 2023,
+    "venue": "ICCV 2023",
+    "arxiv_id": "2212.09748",
+    "pdf_url": "https://arxiv.org/pdf/2212.09748.pdf",
+    "filename": "peebles-xie-2023-dit.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 1 : « Peebles & Xie (Scalable Diffusion Models with Transformers, ICCV 2023) ont montré que la qualité de génération, mesurée par le FID, décroît de façon monotone et prévisible à mesure qu'on augmente la puissance de calcul du réseau (les Gflops). ». Egalement référencé dans la section « Le Bloc DiT et l'adaLN-Zero » (Equation 5).",
+    "highlights": [
+      {
+        "course_section": "Section C — Pourquoi le DiT est passe devant (point 1, loi d'echelle / FID)",
+        "search_text": ["DiT-XL/2", "Gflops", "FID of 2.27"],
+        "course_excerpt": "COURS - Pourquoi le DiT est passe devant (1. La loi d'echelle) : Peebles & Xie (Scalable Diffusion Models with Transformers, ICCV 2023) ont montre que la qualite de generation, mesuree par le FID, decroit de facon monotone et previsible a mesure qu'on augmente la puissance de calcul du reseau (les Gflops). Leur plus gros modele, DiT-XL/2, a etabli un FID de reference de environ 2.27 sur ImageNet 256x256, battant les meilleurs U-Net de l'epoque."
+      },
+      {
+        "course_section": "Equation 5 — Le Bloc DiT et l'adaLN-Zero",
+        "search_text": ["adaLN-Zero", "adaptive layer norm", "zero-initialization"],
+        "course_excerpt": "COURS - Equation 5 (Bloc DiT et adaLN-Zero) : x_{l+1} = x_l + alpha * Layer(gamma_t (.) h_l_hat + beta_t). Adaptive Layer Norm (adaLN) : le pas de temps t traverse un MLP qui genere dynamiquement l'echelle gamma_t et le biais beta_t. L'initialisation Zero (alpha=0) garantit qu'au debut de l'entrainement x_{l+1} = x_l (stabilite structurelle) : le modele preserve le signal avant d'apprendre progressivement ses modifications."
+      }
+    ]
+  },
+  {
+    "id": "attention",
+    "title": "Attention Is All You Need",
+    "authors": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin",
+    "year": 2017,
+    "venue": "NeurIPS 2017",
+    "arxiv_id": "1706.03762",
+    "pdf_url": "https://arxiv.org/pdf/1706.03762.pdf",
+    "filename": "vaswani-et-al-2017-attention.pdf",
+    "course_mention": "Section « Le cœur : l'auto-attention » : formule Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V. Egalement référencé dans la section « l'Encodage Positionnel (Sine/Cosine) » (Equation 4).",
+    "highlights": [
+      {
+        "course_section": "Section A — Le coeur : l'auto-attention",
+        "search_text": ["Scaled Dot-Product Attention", "Attention(Q, K, V)", "Multi-Head Attention"],
+        "course_excerpt": "COURS - Le coeur : l'auto-attention : Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V. Chaque pas de temps interroge l'ensemble de la journee pour decider de ce qui compte. Le produit QK^T mesure la similarite entre chaque paire de pas de temps ; la division par sqrt(d_k) empeche ces scores d'exploser quand la dimension grandit, ce qui eviterait que la softmax sature et que les gradients meurent. Consequence : le pic de 19h peut consulter directement le creux de 4h du matin, des la premiere couche."
+      },
+      {
+        "course_section": "Equation 4 — l'Encodage Positionnel (Sine/Cosine)",
+        "search_text": ["Positional Encoding", "sine and cosine functions of different frequencies", "PE(pos,2i)"],
+        "course_excerpt": "COURS - Equation 4 (Encodage positionnel) : PE(p,2i) = sin(p / 10000^(2i/D)) et PE(p,2i+1) = cos(p / 10000^(2i/D)). La consommation electrique est sequentielle, mais le Transformer traite toutes les donnees simultanement : l'encodage positionnel inscrit la position temporelle dans chaque point. Les dimensions de basse frequence (i petit) oscillent vite (differencient 10h de 11h), les dimensions de haute frequence oscillent lentement (differencient le matin du soir)."
+      }
+    ]
+  }
+]

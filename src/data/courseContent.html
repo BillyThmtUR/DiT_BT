@@ -662,7 +662,9 @@
       <p class="text-sm">
         Théoriquement, le modèle pourrait essayer de deviner
         <span class="text-emerald-400">\(x_0\)</span> (la courbe sans bruit).
-        Mais l'article fondateur DDPM (Ho et al.) a prouvé qu\'il est
+        Mais l'article fondateur
+        <a class="ref-link" href="/reference/ho-jain-abbeel-2020-ddpm.pdf" target="_blank" rel="noopener noreferrer">DDPM, Ho et al. (2020)</a>
+        a prouvé qu\'il est
         mathématiquement plus stable de prédire
         <span class="text-red-400">\(\epsilon\)</span> (le bruit ajouté). Le
         bruit a toujours la même distribution (gaussienne centrée réduite), ce
@@ -790,7 +792,9 @@
       voisins immédiats, il <em>interroge l'ensemble</em> de la journée pour
       décider de ce qui compte. Le mécanisme produit trois projections par token
       : une <strong>requête</strong> \(Q\), une <strong>clé</strong> \(K\)
-      et une <strong>valeur</strong> \(V\).
+      et une <strong>valeur</strong> \(V\). Ce mécanisme provient de l'article
+      fondateur
+      <a class="ref-link" href="/reference/vaswani-et-al-2017-attention.pdf" target="_blank" rel="noopener noreferrer">Vaswani et al., Attention Is All You Need (2017)</a>.
     </p>
     
     <div class="math-box text-2xl text-center">
@@ -1043,9 +1047,9 @@
     <div class="space-y-5 text-slate-700 mb-8">
       
       <p>
-        <strong>1. La loi d\'échelle (l'argument décisif).</strong> Peebles
-        &amp; Xie (<em>Scalable Diffusion Models with Transformers</em>, ICCV
-        2023) ont montré que la qualité de génération, mesurée par le FID,
+        <strong>1. La loi d\'échelle (l'argument décisif).</strong>
+        <a class="ref-link" href="/reference/peebles-xie-2023-dit.pdf" target="_blank" rel="noopener noreferrer">Peebles &amp; Xie (<em>Scalable Diffusion Models with Transformers</em>, ICCV 2023)</a>
+        ont montré que la qualité de génération, mesurée par le FID,
         <strong>décroît de façon monotone et prévisible</strong> à mesure qu\'on
         augmente la puissance de calcul du réseau (les Gflops). Leur plus gros
         modèle, DiT-XL/2, a établi un FID de référence de \(\approx 2{,}27\)
@@ -1135,7 +1139,10 @@
       <p class="text-slate-600 mb-4">
         La consommation électrique est séquentielle. Mais un Transformer traite
         toutes les données simultanément. l'encodage positionnel permet
-        d\'inscrire la position temporelle dans chaque point de donnée.
+        d\'inscrire la position temporelle dans chaque point de donnée. Cet
+        encodage est directement repris de
+        <a class="ref-link" href="/reference/vaswani-et-al-2017-attention.pdf" target="_blank" rel="noopener noreferrer">Vaswani et al., Attention Is All You Need (2017)</a>,
+        section 3.5.
       </p>
        
       <div class="math-box text-xl text-center">
@@ -1199,7 +1206,7 @@
             class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm"
             >5</span
           >
-          Le Bloc DiT et l'adaLN-Zero
+          Le Bloc DiT et l'<a class="ref-link" href="/reference/peebles-xie-2023-dit.pdf" target="_blank" rel="noopener noreferrer">adaLN-Zero</a>
         </h3>
         
       </div>
