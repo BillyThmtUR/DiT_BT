@@ -1,0 +1,443 @@
+[
+  {
+    "id": "ddpm",
+    "title": "Denoising Diffusion Probabilistic Models",
+    "authors": "Jonathan Ho, Ajay Jain, Pieter Abbeel",
+    "year": 2020,
+    "venue": "NeurIPS 2020",
+    "arxiv_id": "2006.11239",
+    "pdf_url": "https://arxiv.org/pdf/2006.11239.pdf",
+    "filename": "ho-jain-abbeel-2020-ddpm.pdf",
+    "course_mention": "Section « La Fonction de Perte (l'Apprentissage) » (Équation 3) : « Mais l'article fondateur DDPM, Ho et al. (2020) a prouvé qu'il est mathématiquement plus stable de prédire epsilon (le bruit ajouté). »",
+    "highlights": [
+      {
+        "course_section": "Equation 1 — Le Processus Forward (Bruitage de Markov)",
+        "search_text": [
+          "is a Markov chain",
+          "Markov chain",
+          "2 Background"
+        ],
+        "course_excerpt": "COURS - Equation 1 (Processus Forward) : q(x_t | x_{t-1}) = N(x_t ; sqrt(1-beta_t) x_{t-1}, beta_t I). Cette equation est une Chaine de Markov : l'etat x_t ne depend QUE de x_{t-1}. La moyenne de la gaussienne est legerement retrecie par le facteur sqrt(1-beta_t) pour eviter que la variance totale de la serie (amplitude max RTE : 13 325 kWh) ne diverge vers l'infini au fil des etapes."
+      },
+      {
+        "course_section": "Equation 2 — Le Saut Temporel (Trick de Reparametrisation)",
+        "search_text": [
+          "arbitrary timestep",
+          "closed form",
+          "Forward process and L"
+        ],
+        "course_excerpt": "COURS - Equation 2 (Trick de reparametrisation) : x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) epsilon. En deroulant la recurrence jusqu'a l'etape 0, on accumule tous les alpha_i dans le produit cumulatif alpha_bar_t = produit(alpha_i), ce qui permet d'obtenir x_t directement depuis x_0 en O(1), sans simuler les 1000 etapes de bruitage une par une."
+      },
+      {
+        "course_section": "Equation 3 — La Fonction de Perte (l'Apprentissage)",
+        "search_text": [
+          "Simplified training objective",
+          "simplified objective",
+          "predict the noise"
+        ],
+        "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. L'article fondateur DDPM (Ho et al.) a prouve qu'il est mathematiquement plus stable de predire epsilon (le bruit ajoute) que x_0 (la courbe sans bruit) : le bruit a toujours la meme distribution gaussienne centree reduite, ce qui rend les gradients d'entrainement plus lisses et previsibles que d'essayer de predire des pics de consommation erratiques."
+      },
+      {
+        "course_section": "Equation 6 — l'Etape de Generation (Reverse Loop)",
+        "search_text": [
+          "Langevin dynamics",
+          "ancestral sampling",
+          "3.2 Reverse process"
+        ],
+        "course_excerpt": "COURS - Equation 6 (Reverse Loop / generation) : mu_t = (1/sqrt(alpha_t)) (x_t - (beta_t/sqrt(1-alpha_bar_t)) epsilon_theta(x_t,t)) puis x_{t-1} = mu_t + sigma_t z avec z ~ N(0,I). L'addition du terme stochastique sigma_t z (dynamique de Langevin) est indispensable : elle previent le lissage excessif de la courbe et garantit la presence des variations asymetriques inherentes aux charges electriques RTE."
+      }
+    ]
+  },
+  {
+    "id": "dit",
+    "title": "Scalable Diffusion Models with Transformers",
+    "authors": "William Peebles, Saining Xie",
+    "year": 2023,
+    "venue": "ICCV 2023",
+    "arxiv_id": "2212.09748",
+    "pdf_url": "https://arxiv.org/pdf/2212.09748.pdf",
+    "filename": "peebles-xie-2023-dit.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 1 : « Peebles & Xie (Scalable Diffusion Models with Transformers, ICCV 2023) ont montré que la qualité de génération, mesurée par le FID, décroît de façon monotone et prévisible à mesure qu'on augmente la puissance de calcul du réseau (les Gflops). ». Egalement référencé dans la section « Le Bloc DiT et l'adaLN-Zero » (Equation 5).",
+    "highlights": [
+      {
+        "course_section": "Section C — Pourquoi le DiT est passe devant (point 1, loi d'echelle / FID)",
+        "search_text": [
+          "DiT-XL/2",
+          "Gflops",
+          "FID of 2.27"
+        ],
+        "course_excerpt": "COURS - Pourquoi le DiT est passe devant (1. La loi d'echelle) : Peebles & Xie (Scalable Diffusion Models with Transformers, ICCV 2023) ont montre que la qualite de generation, mesuree par le FID, decroit de facon monotone et previsible a mesure qu'on augmente la puissance de calcul du reseau (les Gflops). Leur plus gros modele, DiT-XL/2, a etabli un FID de reference de environ 2.27 sur ImageNet 256x256, battant les meilleurs U-Net de l'epoque."
+      },
+      {
+        "course_section": "Equation 5 — Le Bloc DiT et l'adaLN-Zero",
+        "search_text": [
+          "adaLN-Zero",
+          "adaptive layer norm",
+          "zero-initialization"
+        ],
+        "course_excerpt": "COURS - Equation 5 (Bloc DiT et adaLN-Zero) : x_{l+1} = x_l + alpha * Layer(gamma_t (.) h_l_hat + beta_t). Adaptive Layer Norm (adaLN) : le pas de temps t traverse un MLP qui genere dynamiquement l'echelle gamma_t et le biais beta_t. L'initialisation Zero (alpha=0) garantit qu'au debut de l'entrainement x_{l+1} = x_l (stabilite structurelle) : le modele preserve le signal avant d'apprendre progressivement ses modifications."
+      }
+    ]
+  },
+  {
+    "id": "attention",
+    "title": "Attention Is All You Need",
+    "authors": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin",
+    "year": 2017,
+    "venue": "NeurIPS 2017",
+    "arxiv_id": "1706.03762",
+    "pdf_url": "https://arxiv.org/pdf/1706.03762.pdf",
+    "filename": "vaswani-et-al-2017-attention.pdf",
+    "course_mention": "Section « Le cœur : l'auto-attention » : formule Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V. Egalement référencé dans la section « l'Encodage Positionnel (Sine/Cosine) » (Equation 4).",
+    "highlights": [
+      {
+        "course_section": "Section A — Le coeur : l'auto-attention",
+        "search_text": [
+          "Scaled Dot-Product Attention",
+          "Attention(Q, K, V)",
+          "Multi-Head Attention"
+        ],
+        "course_excerpt": "COURS - Le coeur : l'auto-attention : Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V. Chaque pas de temps interroge l'ensemble de la journee pour decider de ce qui compte. Le produit QK^T mesure la similarite entre chaque paire de pas de temps ; la division par sqrt(d_k) empeche ces scores d'exploser quand la dimension grandit, ce qui eviterait que la softmax sature et que les gradients meurent. Consequence : le pic de 19h peut consulter directement le creux de 4h du matin, des la premiere couche."
+      },
+      {
+        "course_section": "Equation 4 — l'Encodage Positionnel (Sine/Cosine)",
+        "search_text": [
+          "Positional Encoding",
+          "sine and cosine functions of different frequencies",
+          "PE(pos,2i)"
+        ],
+        "course_excerpt": "COURS - Equation 4 (Encodage positionnel) : PE(p,2i) = sin(p / 10000^(2i/D)) et PE(p,2i+1) = cos(p / 10000^(2i/D)). La consommation electrique est sequentielle, mais le Transformer traite toutes les donnees simultanement : l'encodage positionnel inscrit la position temporelle dans chaque point. Les dimensions de basse frequence (i petit) oscillent vite (differencient 10h de 11h), les dimensions de haute frequence oscillent lentement (differencient le matin du soir)."
+      }
+    ]
+  },
+  {
+    "id": "latent-diffusion",
+    "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
+    "authors": "Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, Björn Ommer",
+    "year": 2022,
+    "venue": "CVPR 2022",
+    "arxiv_id": "2112.10752",
+    "pdf_url": "https://arxiv.org/pdf/2112.10752.pdf",
+    "filename": "rombach-et-al-2022-latent-diffusion.pdf",
+    "course_mention": "Encart « Et pour nos séries RTE de 48 pas ? » : « ... d'où le recours à un espace latent. »",
+    "highlights": [
+      {
+        "course_section": "Et pour nos series RTE de 48 pas ?",
+        "search_text": [
+          "latent diffusion models",
+          "latent space",
+          "perceptual compression"
+        ],
+        "course_excerpt": "COURS - Et pour nos series RTE de 48 pas : Le cout quadratique O(n^2) de l'attention est le talon d'Achille du Transformer sur les images haute resolution, d'ou le recours, chez Rombach et al. (2022), a un espace latent de dimension reduite obtenu par un autoencodeur, sur lequel opere ensuite le modele de diffusion."
+      }
+    ]
+  },
+  {
+    "id": "classifier-free-guidance",
+    "title": "Classifier-Free Diffusion Guidance",
+    "authors": "Jonathan Ho, Tim Salimans",
+    "year": 2022,
+    "venue": "NeurIPS 2021 Workshop on DGMs / arXiv 2022",
+    "arxiv_id": "2207.12598",
+    "pdf_url": "https://arxiv.org/pdf/2207.12598.pdf",
+    "filename": "ho-salimans-2022-classifier-free-guidance.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 5 : « ... la guidance sans classifieur (classifier-free guidance) de Ho & Salimans (2022) ... »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (5. Une guidance plus simple)",
+        "search_text": [
+          "classifier-free guidance",
+          "without a classifier",
+          "guidance scale"
+        ],
+        "course_excerpt": "COURS - Une guidance plus simple : Ces modeles combinent souvent le DiT avec la guidance sans classifieur (classifier-free guidance) de Ho & Salimans (2022) : en melangeant une prediction conditionnelle et une prediction non-conditionnelle de epsilon_theta(x_t,t), on renforce l'adherence au conditionnement (texte, ou pour nos courbes RTE : jour de semaine, saison, meteo) sans entrainer de reseau classifieur separe."
+      }
+    ]
+  },
+  {
+    "id": "layer-norm",
+    "title": "Layer Normalization",
+    "authors": "Jimmy Lei Ba, Jamie Ryan Kiros, Geoffrey E. Hinton",
+    "year": 2016,
+    "venue": "arXiv 2016",
+    "arxiv_id": "1607.06450",
+    "pdf_url": "https://arxiv.org/pdf/1607.06450.pdf",
+    "filename": "ba-kiros-hinton-2016-layer-normalization.pdf",
+    "course_mention": "Section « Le Bloc DiT et l'adaLN-Zero » (Équation 5) : « Cette normalisation est une variante adaptative de la Layer Normalization (Ba, Kiros & Hinton, 2016) ... »",
+    "highlights": [
+      {
+        "course_section": "Equation 5 - adaLN (Adaptive Layer Norm)",
+        "search_text": [
+          "Layer Normalization",
+          "batch normalization",
+          "summed inputs"
+        ],
+        "course_excerpt": "COURS - Adaptive Layer Norm (adaLN) : Au lieu d'utiliser des parametres de normalisation appris globaux, le pas de temps t traverse un reseau MLP pour generer dynamiquement l'echelle (gamma_t) et le biais (beta_t). Cette normalisation est une variante adaptative de la Layer Normalization (Ba, Kiros & Hinton, 2016), qui normalise chaque exemple independamment sur la dimension des features plutot que sur le batch."
+      }
+    ]
+  },
+  {
+    "id": "diffusion-beats-gans",
+    "title": "Diffusion Models Beat GANs on Image Synthesis",
+    "authors": "Prafulla Dhariwal, Alex Nichol",
+    "year": 2021,
+    "venue": "NeurIPS 2021",
+    "arxiv_id": "2105.05233",
+    "pdf_url": "https://arxiv.org/pdf/2105.05233.pdf",
+    "filename": "dhariwal-nichol-2021-diffusion-beats-gans.pdf",
+    "course_mention": "Section « Le Bloc DiT et l'adaLN-Zero » (Équation 5) : « ... déjà rendue dépendante du pas de temps dans les U-Net de diffusion via la normalisation de groupe adaptative (Dhariwal & Nichol, 2021). »",
+    "highlights": [
+      {
+        "course_section": "Equation 5 - adaLN (Adaptive Layer Norm)",
+        "search_text": [
+          "adaptive group normalization",
+          "classifier guidance",
+          "Diffusion Models Beat GANs"
+        ],
+        "course_excerpt": "COURS - Adaptive Layer Norm (adaLN) : la normalisation conditionnee par le pas de temps t n'est pas une invention du DiT : elle existait deja dans les U-Net de diffusion sous la forme de la normalisation de groupe adaptative (AdaGN) de Dhariwal & Nichol (2021), ou les parametres d'echelle et de biais de chaque GroupNorm sont produits par un embedding du pas de temps (et de la classe)."
+      }
+    ]
+  },
+  {
+    "id": "score-based-generative",
+    "title": "Generative Modeling by Estimating Gradients of the Data Distribution",
+    "authors": "Yang Song, Stefano Ermon",
+    "year": 2019,
+    "venue": "NeurIPS 2019",
+    "arxiv_id": "1907.05600",
+    "pdf_url": "https://arxiv.org/pdf/1907.05600.pdf",
+    "filename": "song-ermon-2019-score-based-generative.pdf",
+    "course_mention": "Section « l'Étape de Génération (Reverse Loop) » (Équation 6) : « Ce terme d'exploration (Dynamique de Langevin, Song & Ermon, 2019) prévient le lissage excessif de la courbe... »",
+    "highlights": [
+      {
+        "course_section": "Equation 6 - Reverse Loop (terme stochastique sigma_t z)",
+        "search_text": [
+          "Langevin dynamics",
+          "score matching",
+          "score network"
+        ],
+        "course_excerpt": "COURS - L'Etape de Generation (Reverse Loop) : mu_t = (1/sqrt(alpha_t))(x_t - (beta_t/sqrt(1-alpha_bar_t)) epsilon_theta(x_t,t)) puis x_{t-1} = mu_t + sigma_t z avec z ~ N(0,I). Ce terme d'exploration (Dynamique de Langevin, Song & Ermon 2019) previent le lissage excessif de la courbe, garantissant la presence des variations asymetriques inherentes aux charges electriques."
+      }
+    ]
+  },
+  {
+    "id": "score-sde",
+    "title": "Score-Based Generative Modeling through Stochastic Differential Equations",
+    "authors": "Yang Song, Jascha Sohl-Dickstein, Diederik P. Kingma, Abhishek Kumar, Stefano Ermon, Ben Poole",
+    "year": 2021,
+    "venue": "ICLR 2021",
+    "arxiv_id": "2011.13456",
+    "pdf_url": "https://arxiv.org/pdf/2011.13456.pdf",
+    "filename": "song-et-al-2021-score-sde.pdf",
+    "course_mention": "Section « l'Étape de Génération (Reverse Loop) » (Équation 6) : « ... cette boucle de débruitage correspond à une discrétisation d'une équation différentielle stochastique (Song et al., 2021). »",
+    "highlights": [
+      {
+        "course_section": "Equation 6 - Reverse Loop (lien avec les SDE)",
+        "search_text": [
+          "stochastic differential equation",
+          "reverse-time SDE",
+          "score-based generative model"
+        ],
+        "course_excerpt": "COURS - L'Etape de Generation (Reverse Loop) : la boucle x_{t-1} = mu_t + sigma_t z, repetee T=1000 fois avec des pas infinitesimaux, correspond a la discretisation d'une equation differentielle stochastique (SDE) inverse (Song et al. 2021) : partir du bruit pur et integrer cette SDE en remontant le temps regenere la distribution des donnees, ici nos courbes RTE."
+      }
+    ]
+  },
+  {
+    "id": "improved-ddpm",
+    "title": "Improved Denoising Diffusion Probabilistic Models",
+    "authors": "Alex Nichol, Prafulla Dhariwal",
+    "year": 2021,
+    "venue": "ICML 2021",
+    "arxiv_id": "2102.09672",
+    "pdf_url": "https://arxiv.org/pdf/2102.09672.pdf",
+    "filename": "nichol-dhariwal-2021-improved-ddpm.pdf",
+    "course_mention": "Section « La Modélisation Continue : l'EMA » : « ... la moyenne mobile exponentielle assure la stabilité, comme le recommandent Nichol & Dhariwal (Improved DDPM, 2021). »",
+    "highlights": [
+      {
+        "course_section": "La Modelisation Continue : l'EMA",
+        "search_text": [
+          "exponential moving average",
+          "cosine noise schedule",
+          "Improved Denoising Diffusion"
+        ],
+        "course_excerpt": "COURS - La Modelisation Continue : l'EMA : theta_t^EMA = 0.999 * theta_{t-1}^EMA + 0.001 * theta_batch_actuel. L'utilisation des poids d'entrainement bruts pour la generation conduit souvent a des artefacts ; la moyenne mobile exponentielle assure la stabilite, comme le recommandent Nichol & Dhariwal (Improved DDPM, 2021), qui introduisent egalement un planning de bruit en cosinus ameliorant la vraisemblance des modeles de diffusion."
+      }
+    ]
+  },
+  {
+    "id": "timegrad",
+    "title": "Autoregressive Denoising Diffusion Models for Multivariate Probabilistic Time Series Forecasting",
+    "authors": "Kashif Rasul, Calvin Seward, Ingmar Schuster, Roland Vollgraf",
+    "year": 2021,
+    "venue": "ICML 2021",
+    "arxiv_id": "2101.12072",
+    "pdf_url": "https://arxiv.org/pdf/2101.12072.pdf",
+    "filename": "rasul-et-al-2021-timegrad.pdf",
+    "course_mention": "Section « Pour aller plus loin : la diffusion appliquée aux séries temporelles », encart TimeGrad.",
+    "highlights": [
+      {
+        "course_section": "Pour aller plus loin - TimeGrad",
+        "search_text": [
+          "autoregressive",
+          "denoising diffusion probabilistic models",
+          "multivariate probabilistic time series"
+        ],
+        "course_excerpt": "COURS - Pour aller plus loin (TimeGrad, Rasul et al. 2021) : premier modele de diffusion autoregressif pour la prevision probabiliste de series temporelles. Un RNN encode l'historique, et un reseau de debruitage (l'equivalent de epsilon_theta) genere chaque pas futur, exactement comme l'Equation 6 genere x_{t-1} a partir de x_t et du bruit estime."
+      }
+    ]
+  },
+  {
+    "id": "csdi",
+    "title": "CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation",
+    "authors": "Yusuke Tashiro, Jiaming Song, Yang Song, Stefano Ermon",
+    "year": 2021,
+    "venue": "NeurIPS 2021",
+    "arxiv_id": "2107.03502",
+    "pdf_url": "https://arxiv.org/pdf/2107.03502.pdf",
+    "filename": "tashiro-et-al-2021-csdi.pdf",
+    "course_mention": "Section « Pour aller plus loin : la diffusion appliquée aux séries temporelles », encart CSDI.",
+    "highlights": [
+      {
+        "course_section": "Pour aller plus loin - CSDI",
+        "search_text": [
+          "time series imputation",
+          "conditional score-based diffusion",
+          "CSDI"
+        ],
+        "course_excerpt": "COURS - Pour aller plus loin (CSDI, Tashiro et al. 2021) : un modele a score conditionne par les valeurs observees permet d'imputer les pas manquants d'une serie (ex : un demi-pas RTE corrompu par un defaut de mesure), en appliquant le meme schema forward/reverse que l'Equation 1 et l'Equation 6, mais conditionne sur les observations disponibles."
+      }
+    ]
+  },
+  {
+    "id": "sssd",
+    "title": "Diffusion-based Time Series Imputation and Forecasting with Structured State Space Models",
+    "authors": "Juan Miguel Lopez Alcaraz, Nils Strodthoff",
+    "year": 2022,
+    "venue": "TMLR 2023 (arXiv 2022)",
+    "arxiv_id": "2208.09399",
+    "pdf_url": "https://arxiv.org/pdf/2208.09399.pdf",
+    "filename": "alcaraz-strodthoff-2022-sssd.pdf",
+    "course_mention": "Section « Pour aller plus loin : la diffusion appliquée aux séries temporelles », encart SSSD.",
+    "highlights": [
+      {
+        "course_section": "Pour aller plus loin - SSSD",
+        "search_text": [
+          "structured state space",
+          "diffusion-based",
+          "time series imputation"
+        ],
+        "course_excerpt": "COURS - Pour aller plus loin (SSSD, Alcaraz & Strodthoff 2022) : remplace le reseau de debruitage par des modeles a espace d'etat structure (S4), efficaces sur les sequences longues : une alternative a l'attention pour des courbes RTE a tres haute resolution temporelle."
+      }
+    ]
+  },
+  {
+    "id": "informer",
+    "title": "Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting",
+    "authors": "Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, Wancai Zhang",
+    "year": 2021,
+    "venue": "AAAI 2021",
+    "arxiv_id": "2012.07436",
+    "pdf_url": "https://arxiv.org/pdf/2012.07436.pdf",
+    "filename": "zhou-et-al-2021-informer.pdf",
+    "course_mention": "Section « Le Mécanisme Transformer », après le tableau « Face à face U-Net vs DiT » : « Informer (Zhou et al., 2021) réduit le coût O(n²) de l'attention via une attention ProbSparse ... validé sur des jeux de données de consommation électrique (ECL, ETT). »",
+    "highlights": [
+      {
+        "course_section": "Face a face U-Net vs DiT - Transformers pour series longues",
+        "search_text": [
+          "ProbSparse",
+          "Long Sequence Time-Series Forecasting",
+          "Electricity Transformer"
+        ],
+        "course_excerpt": "COURS - D'autres Transformers s'attaquent directement a la prevision de series temporelles longues : Informer (Zhou et al. 2021) reduit le cout O(n^2) de l'attention via une attention ProbSparse, valide sur des jeux de donnees de consommation electrique (ECL, ETT) - proches en nature de nos courbes RTE."
+      }
+    ]
+  },
+  {
+    "id": "autoformer",
+    "title": "Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting",
+    "authors": "Haixu Wu, Jiehui Xu, Jianmin Wang, Mingsheng Long",
+    "year": 2021,
+    "venue": "NeurIPS 2021",
+    "arxiv_id": "2106.13008",
+    "pdf_url": "https://arxiv.org/pdf/2106.13008.pdf",
+    "filename": "wu-et-al-2021-autoformer.pdf",
+    "course_mention": "Section « Le Mécanisme Transformer », après le tableau « Face à face U-Net vs DiT » : « ... Autoformer (Wu et al., 2021) remplace l'attention point-à-point par une corrélation automatique entre sous-séquences. »",
+    "highlights": [
+      {
+        "course_section": "Face a face U-Net vs DiT - Transformers pour series longues",
+        "search_text": [
+          "Auto-Correlation",
+          "Decomposition Transformers",
+          "long-term series forecasting"
+        ],
+        "course_excerpt": "COURS - D'autres Transformers s'attaquent directement a la prevision de series temporelles longues : Autoformer (Wu et al. 2021) remplace l'attention point-a-point par une correlation automatique entre sous-sequences, valide sur des jeux de donnees de consommation electrique (ECL, ETT) - proches en nature de nos courbes RTE."
+      }
+    ]
+  },
+  {
+    "id": "renewable-gan",
+    "title": "Model-Free Renewable Scenario Generation Using Generative Adversarial Networks",
+    "authors": "Yize Chen, Yishen Wang, Daniel Kirschen, Baosen Zhang",
+    "year": 2018,
+    "venue": "IEEE Transactions on Power Systems",
+    "arxiv_id": "1707.09676",
+    "pdf_url": "https://arxiv.org/pdf/1707.09676.pdf",
+    "filename": "chen-et-al-2018-renewable-gan.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 1 : « Pour la génération de séries électriques, l'enjeu est similaire : les GAN de scénarios renouvelables (Chen et al., 2018) produisaient déjà des courbes synthétiques de production éolienne ou solaire réalistes... »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (1. La loi d'echelle)",
+        "search_text": [
+          "renewable scenario",
+          "Generative Adversarial Networks",
+          "wind and solar"
+        ],
+        "course_excerpt": "COURS - La loi d'echelle : Le U-Net n'offre pas de montee en charge reguliere : rien ne garantit qu'un U-Net deux fois plus gros sera meilleur. Pour la generation de series electriques, l'enjeu est similaire : les GAN de scenarios renouvelables (Chen et al. 2018) produisaient deja des courbes synthetiques de production eolienne ou solaire realistes, mais sans la loi d'echelle previsible qui caracterise les architectures de type Transformer."
+      }
+    ]
+  },
+  {
+    "id": "diffload",
+    "title": "DiffLoad: Uncertainty Quantification in Energy Load Forecasting with Diffusion Model",
+    "authors": "Zhixian Wang, Qingsong Wen, Chaoli Zhang, Liang Sun, Yi Wang",
+    "year": 2023,
+    "venue": "arXiv 2023",
+    "arxiv_id": "2306.01001",
+    "pdf_url": "https://arxiv.org/pdf/2306.01001.pdf",
+    "filename": "wang-et-al-2023-diffload.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « DiffLoad (Wang et al., 2023) l'utilise pour la prévision de charge avec quantification de l'incertitude... »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (4. La validation par le domaine de l'energie)",
+        "search_text": [
+          "uncertainty quantification",
+          "load forecasting",
+          "diffusion model"
+        ],
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : Au-dela de l'image, le squelette diffusion + Transformer est desormais applique directement aux series electriques : DiffLoad (Wang et al. 2023) l'utilise pour la prevision de charge avec quantification de l'incertitude, separant l'incertitude epistemique (modele) de l'incertitude aleatoire (donnees) - une question centrale pour la planification du reseau RTE."
+      }
+    ]
+  },
+  {
+    "id": "diffstg",
+    "title": "DiffSTG: Probabilistic Spatio-Temporal Graph Forecasting with Denoising Diffusion Models",
+    "authors": "Haomin Wen, Youfang Lin, Yutong Xia, Huaiyu Wan, Qingsong Wen, Roger Zimmermann, Yuxuan Liang",
+    "year": 2023,
+    "venue": "SIGSPATIAL 2023",
+    "arxiv_id": "2301.13629",
+    "pdf_url": "https://arxiv.org/pdf/2301.13629.pdf",
+    "filename": "wen-et-al-2023-diffstg.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « ... DiffSTG (Wen et al., 2023) l'étend à un réseau entier de capteurs (plusieurs postes RTE simultanément), en remplaçant le U-Net spatio-temporel par un Transformer de diffusion. »",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant (4. La validation par le domaine de l'energie)",
+        "search_text": [
+          "spatio-temporal graph",
+          "denoising diffusion",
+          "graph neural network"
+        ],
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : DiffSTG (Wen et al. 2023) etend le schema de diffusion a un reseau entier de capteurs spatio-temporels (par exemple plusieurs postes RTE simultanement), en combinant un graphe (relations spatiales entre postes) avec le meme schema forward/reverse que les Equations 1 et 6 de ce cours, le U-Net spatio-temporel etant ici remplace par un reseau de type Transformer."
+      }
+    ]
+  }
+]
