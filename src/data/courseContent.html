@@ -209,7 +209,7 @@
           
           <p class="text-indigo-800 text-sm mt-2 leading-relaxed">
             Contrairement aux modèles de diffusion historiques bâtis sur un
-            <strong>U-Net convolutif</strong>, le DiT remplace intégralement ce
+            <strong><a class="ref-link" href="/reference/ronneberger-et-al-2015-unet.pdf" target="_blank" rel="noopener noreferrer">U-Net convolutif</a></strong>, le DiT remplace intégralement ce
             squelette par une pile de <strong>Transformers</strong>. La section
             dédiée détaille pourquoi ce choix l'a emporté.
           </p>
@@ -1049,7 +1049,8 @@
       <p>
         <strong>1. La loi d\'échelle (l'argument décisif).</strong>
         <a class="ref-link" href="/reference/peebles-xie-2023-dit.pdf" target="_blank" rel="noopener noreferrer">Peebles &amp; Xie (<em>Scalable Diffusion Models with Transformers</em>, ICCV 2023)</a>
-        ont montré que la qualité de génération, mesurée par le FID,
+        ont montré que la qualité de génération, mesurée par le
+        <a class="ref-link" href="/reference/heusel-et-al-2017-fid.pdf" target="_blank" rel="noopener noreferrer">FID (Fréchet Inception Distance)</a>,
         <strong>décroît de façon monotone et prévisible</strong> à mesure qu\'on
         augmente la puissance de calcul du réseau (les Gflops). Leur plus gros
         modèle, DiT-XL/2, a établi un FID de référence de \(\approx 2{,}27\)
@@ -1079,11 +1080,22 @@
       <p>
         <strong>4. La validation par l'industrie.</strong> Le squelette de type
         DiT est aujourd\'hui au cœur des modèles génératifs de pointe :
-        <strong>Stable Diffusion 3</strong> (MM-DiT), <strong>PixArt-α</strong>,
+        <strong><a class="ref-link" href="/reference/esser-et-al-2024-sd3-mmdit.pdf" target="_blank" rel="noopener noreferrer">Stable Diffusion 3</a></strong> (MM-DiT), <strong><a class="ref-link" href="/reference/chen-et-al-2023-pixart-alpha.pdf" target="_blank" rel="noopener noreferrer">PixArt-α</a></strong>,
         <strong>Sora</strong> (vidéo) ou <strong>Flux</strong> reposent tous sur
         un Transformer de diffusion plutôt que sur un U-Net.
       </p>
-      
+
+      <p>
+        <strong>5. Une guidance plus simple.</strong> Ces modèles combinent
+        souvent le DiT avec la
+        <a class="ref-link" href="/reference/ho-salimans-2022-classifier-free-guidance.pdf" target="_blank" rel="noopener noreferrer">guidance sans classifieur (classifier-free guidance)</a>
+        de Ho &amp; Salimans (2022) : en mélangeant une prédiction
+        conditionnelle et une prédiction non-conditionnelle de
+        \(\epsilon_\theta\), on renforce l\'adhérence au conditionnement (texte,
+        ou pour nos courbes RTE : jour de semaine, saison, météo) sans entraîner
+        de réseau classifieur séparé.
+      </p>
+
     </div>
     
     <div
@@ -1099,7 +1111,7 @@
       <p class="text-sm text-emerald-800 leading-relaxed">
         Le coût quadratique \(\mathcal{O}(n^2)\) de l'attention est le talon
         d\'Achille du Transformer sur les images haute résolution (d\'où le
-        recours à un espace latent). Mais ici, après patchification, la séquence
+        recours à un <a class="ref-link" href="/reference/rombach-et-al-2022-latent-diffusion.pdf" target="_blank" rel="noopener noreferrer">espace latent</a>). Mais ici, après patchification, la séquence
         ne compte qu\'\(\approx 24\) tokens : ce coût est
         <strong>négligeable</strong>. On profite donc du champ réceptif global —
         idéal pour capter la périodicité journalière et le couplage matin/soir —
@@ -1158,7 +1170,9 @@
           <p>
             <strong>Patchification :</strong> La série de 48 points est découpée
             en "patches" de taille \(P=2\) (1 heure entière). On obtient donc
-            \(p \in [0, 23]\) tokens.
+            \(p \in [0, 23]\) tokens. Cette idée de découper l\'entrée en
+            patches projetés linéairement est directement héritée des
+            <a class="ref-link" href="/reference/dosovitskiy-et-al-2020-vit.pdf" target="_blank" rel="noopener noreferrer">Vision Transformers (ViT, Dosovitskiy et al., 2020)</a>.
           </p>
           
           <p>
@@ -1234,7 +1248,11 @@
             <span class="color-time">t</span> traverse un réseau MLP pour
             générer dynamiquement l'échelle (\(\gamma_t\)) et le biais
             (\(\beta_t\)). Le réseau s\'adapte ainsi à son étape de
-            débruitage.
+            débruitage. Cette normalisation est une variante adaptative de la
+            <a class="ref-link" href="/reference/ba-kiros-hinton-2016-layer-normalization.pdf" target="_blank" rel="noopener noreferrer">Layer Normalization (Ba, Kiros &amp; Hinton, 2016)</a>,
+            déjà rendue dépendante du pas de temps dans les U-Net de diffusion
+            via la
+            <a class="ref-link" href="/reference/dhariwal-nichol-2021-diffusion-beats-gans.pdf" target="_blank" rel="noopener noreferrer">normalisation de groupe adaptative (Dhariwal &amp; Nichol, 2021)</a>.
           </p>
           
           <p>
@@ -1323,9 +1341,12 @@
           >Indispensable :</strong
         >
         l'addition d\'une variance aléatoire \(z\). Ce terme d\'exploration
-        (Dynamique de Langevin) prévient le lissage excessif de la courbe,
+        (<a class="ref-link" href="/reference/song-ermon-2019-score-based-generative.pdf" target="_blank" rel="noopener noreferrer">Dynamique de Langevin, Song &amp; Ermon, 2019</a>)
+        prévient le lissage excessif de la courbe,
         garantissant la présence des variations asymétriques inhérentes aux
-        charges électriques.
+        charges électriques. Ho et al. (2020) ont d\'ailleurs montré que cette
+        boucle de débruitage correspond à une discrétisation d\'une
+        <a class="ref-link" href="/reference/song-et-al-2021-score-sde.pdf" target="_blank" rel="noopener noreferrer">équation différentielle stochastique (Song et al., 2021)</a>.
       </p>
       
     </div>
@@ -1342,7 +1363,8 @@
     <p class="text-slate-600 mb-6">
       l'utilisation des poids d\'entraînement bruts pour la génération conduit
       souvent à des artefacts. La moyenne mobile exponentielle assure la
-      stabilité.
+      stabilité, comme le recommandent
+      <a class="ref-link" href="/reference/nichol-dhariwal-2021-improved-ddpm.pdf" target="_blank" rel="noopener noreferrer">Nichol &amp; Dhariwal (Improved DDPM, 2021)</a>.
     </p>
      
     <div class="math-box text-xl text-center mb-8">
@@ -1396,5 +1418,66 @@
       
     </div>
      //
+  </section>
+
+  <!-- Pour aller plus loin : diffusion et séries temporelles -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+
+    <h2 class="text-3xl font-black text-slate-800 mb-4">
+      Pour aller plus loin : la diffusion appliquée aux séries temporelles
+    </h2>
+
+    <p class="text-slate-600 mb-6">
+      Le DiT a été conçu pour la génération d\'images, mais les principes vus
+      dans ce cours (bruitage de Markov, prédiction du bruit, Transformer comme
+      réseau <span class="color-model">\(\epsilon_\theta\)</span>) ont
+      rapidement été repris pour des séries temporelles comme nos courbes de
+      consommation RTE, que ce soit pour la <strong>prévision</strong>
+      (forecasting) ou le <strong>comblement de données manquantes</strong>
+      (imputation).
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference/rasul-et-al-2021-timegrad.pdf" target="_blank" rel="noopener noreferrer">TimeGrad (Rasul et al., 2021)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Premier modèle de diffusion autorégressif pour la prévision
+          probabiliste de séries temporelles : un RNN encode l\'historique, et
+          un réseau de débruitage (l\'équivalent de
+          <span class="color-model">\(\epsilon_\theta\)</span>) génère chaque
+          pas futur, exactement comme l\'Équation 6 génère
+          <span class="color-signal">\(x_{t-1}\)</span>.
+        </p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference/tashiro-et-al-2021-csdi.pdf" target="_blank" rel="noopener noreferrer">CSDI (Tashiro et al., 2021)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Un modèle à score conditionné par les valeurs observées permet
+          d\'imputer les pas manquants d\'une série (ex : un demi-pas RTE
+          corrompu par un défaut de mesure), en appliquant le même schéma
+          forward/reverse que l\'Équation 1 et l\'Équation 6.
+        </p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference/alcaraz-strodthoff-2022-sssd.pdf" target="_blank" rel="noopener noreferrer">SSSD (Alcaraz &amp; Strodthoff, 2022)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Remplace le réseau de débruitage par des modèles à espace d\'état
+          structuré (S4), efficaces sur les séquences longues : une alternative
+          à l\'attention pour des courbes RTE à très haute résolution
+          temporelle.
+        </p>
+      </div>
+
+    </div>
+
   </section>
 </main>
