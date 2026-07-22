@@ -69,7 +69,7 @@
     "arxiv_id": "2006.11239",
     "pdf_url": "https://arxiv.org/pdf/2006.11239.pdf",
     "filename": "ho-jain-abbeel-2020-ddpm.pdf",
-    "course_mention": "Section « La Fonction de Perte (l'Apprentissage) » (Équation 3) : « Mais l'article fondateur DDPM, Ho et al. (2020) a prouvé qu'il est mathématiquement plus stable de prédire epsilon (le bruit ajouté). »",
+    "course_mention": "Section « La Fonction de Perte (l'Apprentissage) » (Équation 3) : DDPM, Ho et al. (2020), introduit la perte simplifiée qui consiste à prédire le bruit epsilon ajouté.",
     "highlights": [
       {
         "course_section": "Equation 1 — Le Processus Forward (Bruitage de Markov)",
@@ -96,7 +96,7 @@
           "Lsimple(",
           "predict the noise"
         ],
-        "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. L'article fondateur DDPM (Ho et al.) a prouve qu'il est mathematiquement plus stable de predire epsilon (le bruit ajoute) que x_0 (la courbe sans bruit) : le bruit a toujours la meme distribution gaussienne centree reduite, ce qui rend les gradients d'entrainement plus lisses et previsibles que d'essayer de predire des pics de consommation erratiques."
+        "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. DDPM (Ho et al. 2020) montre qu'une perte simplifiee consistant a predire epsilon, le bruit ajoute, fonctionne tres bien en pratique. Comme ce bruit suit une gaussienne centree reduite, l'objectif est plus regulier que la reconstruction directe de x_0."
       },
       {
         "course_section": "Equation 6 — l'Etape de Generation (Reverse Loop)",
@@ -168,6 +168,28 @@
           "PE(pos,2i)"
         ],
         "course_excerpt": "COURS - Equation 4 (Encodage positionnel) : PE(p,2i) = sin(p / 10000^(2i/D)) et PE(p,2i+1) = cos(p / 10000^(2i/D)). La consommation electrique est sequentielle, mais le Transformer traite toutes les donnees simultanement : l'encodage positionnel inscrit la position temporelle dans chaque point. Les dimensions de basse frequence (i petit) oscillent vite (differencient 10h de 11h), les dimensions de haute frequence oscillent lentement (differencient le matin du soir)."
+      }
+    ]
+  },
+  {
+    "id": "vision-transformer",
+    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "authors": "Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby",
+    "year": 2020,
+    "venue": "ICLR 2021 (arXiv 2020)",
+    "arxiv_id": "2010.11929",
+    "pdf_url": "https://arxiv.org/pdf/2010.11929.pdf",
+    "filename": "dosovitskiy-et-al-2020-vit.pdf",
+    "course_mention": "Section « Vue d'ensemble » et section « l'Encodage Positionnel » : la séquence est découpée en patches projetés comme des tokens, principe directement hérité du Vision Transformer.",
+    "highlights": [
+      {
+        "course_section": "Vue d'ensemble / Equation 4 - Patchify + projection",
+        "search_text": [
+          "split an image into patches",
+          "sequence of linear embeddings",
+          "Image patches are treated the same way as tokens"
+        ],
+        "course_excerpt": "COURS - Patchify + projection : la serie de 48 points est decoupee en patches, puis projetee dans l'espace cache D=256, dans l'esprit du Vision Transformer qui transforme des patches en une sequence de tokens avant de les envoyer dans un Transformer."
       }
     ]
   },
@@ -326,6 +348,28 @@
     ]
   },
   {
+    "id": "diffusion-ts",
+    "title": "Diffusion-TS: Interpretable Diffusion for General Time Series Generation",
+    "authors": "Xinyu Yuan, Yan Qiao",
+    "year": 2024,
+    "venue": "ICLR 2024",
+    "arxiv_id": "2403.01742",
+    "pdf_url": "https://arxiv.org/pdf/2403.01742.pdf",
+    "filename": "yuan-qiao-2024-diffusion-ts.pdf",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4, et section « Pour aller plus loin » : modèle récent qui combine diffusion et Transformer encodeur-décodeur pour générer des séries temporelles multivariées.",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le DiT est passe devant / Pour aller plus loin - Diffusion-TS",
+        "search_text": [
+          "encoder-decoder transformer",
+          "disentangled temporal representations",
+          "reconstruct the sample instead of the noise"
+        ],
+        "course_excerpt": "COURS - Diffusion-TS (Yuan & Qiao, 2024) combine explicitement diffusion et Transformer encodeur-decodeur pour generer des series temporelles multivariees. Il ajoute une decomposition tendance/saisonnalite pour capturer la structure semantique des series, ce qui rapproche directement le DiT des signaux journaliers structures comme les courbes RTE."
+      }
+    ]
+  },
+  {
     "id": "timegrad",
     "title": "Autoregressive Denoising Diffusion Models for Multivariate Probabilistic Time Series Forecasting",
     "authors": "Kashif Rasul, Calvin Seward, Ingmar Schuster, Roland Vollgraf",
@@ -459,10 +503,10 @@
   },
   {
     "id": "diffload",
-    "title": "DiffLoad: Uncertainty Quantification in Energy Load Forecasting with Diffusion Model",
+    "title": "DiffLoad: Uncertainty Quantification in Electrical Load Forecasting with the Diffusion Model",
     "authors": "Zhixian Wang, Qingsong Wen, Chaoli Zhang, Liang Sun, Yi Wang",
     "year": 2023,
-    "venue": "arXiv 2023",
+    "venue": "IEEE Transactions on Power Systems, 2025 (arXiv 2023)",
     "arxiv_id": "2306.01001",
     "pdf_url": "https://arxiv.org/pdf/2306.01001.pdf",
     "filename": "wang-et-al-2023-diffload.pdf",
@@ -475,7 +519,7 @@
           "load forecasting",
           "diffusion model"
         ],
-        "course_excerpt": "COURS - La validation par le domaine de l'energie : Au-dela de l'image, le squelette diffusion + Transformer est desormais applique directement aux series electriques : DiffLoad (Wang et al. 2023) l'utilise pour la prevision de charge avec quantification de l'incertitude, separant l'incertitude epistemique (modele) de l'incertitude aleatoire (donnees) - une question centrale pour la planification du reseau RTE."
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : au-dela de l'image, le paradigme de diffusion est applique aux series electriques avec des architectures adaptees. DiffLoad (Wang et al. 2023) l'utilise pour la prevision de charge avec quantification de l'incertitude, en distinguant incertitude epistemique (modele) et aleatoire (donnees)."
       }
     ]
   },
@@ -488,7 +532,7 @@
     "arxiv_id": "2301.13629",
     "pdf_url": "https://arxiv.org/pdf/2301.13629.pdf",
     "filename": "wen-et-al-2023-diffstg.pdf",
-    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : « ... DiffSTG (Wen et al., 2023) l'étend à un réseau entier de capteurs (plusieurs postes RTE simultanément), en remplaçant le U-Net spatio-temporel par un Transformer de diffusion. »",
+    "course_mention": "Section « Pourquoi le DiT est passé devant », point 4 : DiffSTG (Wen et al., 2023) étend la diffusion probabiliste à un réseau de capteurs spatio-temporels via un réseau de débruitage sur graphe.",
     "highlights": [
       {
         "course_section": "Pourquoi le DiT est passe devant (4. La validation par le domaine de l'energie)",
@@ -497,7 +541,7 @@
           "denoising diffusion",
           "graph neural network"
         ],
-        "course_excerpt": "COURS - La validation par le domaine de l'energie : DiffSTG (Wen et al. 2023) etend le schema de diffusion a un reseau entier de capteurs spatio-temporels (par exemple plusieurs postes RTE simultanement), en combinant un graphe (relations spatiales entre postes) avec le meme schema forward/reverse que les Equations 1 et 6 de ce cours, le U-Net spatio-temporel etant ici remplace par un reseau de type Transformer."
+        "course_excerpt": "COURS - La validation par le domaine de l'energie : DiffSTG (Wen et al. 2023) etend le schema de diffusion a un reseau entier de capteurs spatio-temporels, par exemple plusieurs postes RTE simultanement, via un reseau de debruitage spatio-temporel sur graphe."
       }
     ]
   }

@@ -152,7 +152,10 @@
           
           <li>
             <strong>Patchify + projection :</strong> la séquence est découpée en
-            patches, puis projetée dans l'espace caché \(D=256\) (cf. Éq. 4).
+            patches, puis projetée dans l'espace caché \(D=256\), dans l'esprit
+            du
+            <a class="ref-link" href="/reference/dosovitskiy-et-al-2020-vit.pdf" target="_blank" rel="noopener noreferrer">Vision Transformer</a>
+            qui traite des patches comme des tokens (cf. Éq. 4).
           </li>
           
           <li>
@@ -682,13 +685,13 @@
         <span class="text-emerald-400">\(x_0\)</span> (la courbe sans bruit).
         Mais l'article fondateur
         <a class="ref-link" href="/reference/ho-jain-abbeel-2020-ddpm.pdf" target="_blank" rel="noopener noreferrer">DDPM, Ho et al. (2020)</a>
-        a prouvé qu\'il est
-        mathématiquement plus stable de prédire
-        <span class="text-red-400">\(\epsilon\)</span> (le bruit ajouté). Le
+        montre qu\'une perte simplifiée consistant à prédire
+        <span class="text-red-400">\(\epsilon\)</span> (le bruit ajouté)
+        fonctionne très bien en pratique. Le
         bruit a toujours la même distribution (gaussienne centrée réduite), ce
-        qui rend les gradients d\'entraînement infiniment plus lisses et
-        prévisibles que d\'essayer de prédire des pics de consommation
-        erratiques. Cette perte simplifiée dérive d\'une borne variationnelle
+        qui rend l'objectif d\'entraînement plus régulier que d\'essayer de
+        reconstruire directement des pics de consommation erratiques. Cette
+        perte simplifiée dérive d\'une borne variationnelle
         sur la vraisemblance (obtenue par l\'inégalité de Jensen), le cadre
         d\'entraînement introduit par
         <a class="ref-link" href="/reference/sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf" target="_blank" rel="noopener noreferrer">Sohl-Dickstein et al. (2015)</a>
@@ -1119,15 +1122,19 @@
       
       <p>
         <strong>4. La validation par le domaine de l'énergie.</strong> Au-delà
-        de l'image, le squelette « diffusion + Transformer » est désormais
-        appliqué directement aux séries électriques :
+        de l'image, le paradigme de diffusion est désormais appliqué directement
+        aux séries électriques, parfois avec des architectures séquentielles ou
+        de graphe plutôt qu\'un DiT strict :
         <a class="ref-link" href="/reference/wang-et-al-2023-diffload.pdf" target="_blank" rel="noopener noreferrer">DiffLoad (Wang et al., 2023)</a>
         l\'utilise pour la prévision de charge avec quantification de
         l\'incertitude, et
         <a class="ref-link" href="/reference/wen-et-al-2023-diffstg.pdf" target="_blank" rel="noopener noreferrer">DiffSTG (Wen et al., 2023)</a>
         l\'étend à un réseau entier de capteurs (plusieurs postes RTE
-        simultanément), en remplaçant le U-Net spatio-temporel par un
-        Transformer de diffusion.
+        simultanément) via un réseau de débruitage spatio-temporel sur graphe.
+        Plus récemment,
+        <a class="ref-link" href="/reference/yuan-qiao-2024-diffusion-ts.pdf" target="_blank" rel="noopener noreferrer">Diffusion-TS (Yuan &amp; Qiao, 2024)</a>
+        combine explicitement diffusion et Transformer encodeur-décodeur pour
+        générer des séries temporelles multivariées.
       </p>
 
       <p>
@@ -1383,13 +1390,15 @@
         soustraite (calcul de \(\mu_t\)). <br /><strong
           >Indispensable :</strong
         >
-        l'addition d\'une variance aléatoire \(z\). Ce terme d\'exploration
+        l'addition d\'une variance aléatoire \(z\). Ce terme stochastique
         (<a class="ref-link" href="/reference/song-ermon-2019-score-based-generative.pdf" target="_blank" rel="noopener noreferrer">Dynamique de Langevin, Song &amp; Ermon, 2019</a>)
         prévient le lissage excessif de la courbe,
         garantissant la présence des variations asymétriques inhérentes aux
-        charges électriques. Ho et al. (2020) ont d\'ailleurs montré que cette
-        boucle de débruitage correspond à une discrétisation d\'une
-        <a class="ref-link" href="/reference/song-et-al-2021-score-sde.pdf" target="_blank" rel="noopener noreferrer">équation différentielle stochastique (Song et al., 2021)</a>.
+        charges électriques. Dans la formulation continue de
+        <a class="ref-link" href="/reference/song-et-al-2021-score-sde.pdf" target="_blank" rel="noopener noreferrer">Song et al. (2021)</a>,
+        la boucle de débruitage peut aussi se lire comme la discrétisation
+        d\'une
+        équation différentielle stochastique inverse.
       </p>
       
     </div>
@@ -1480,7 +1489,7 @@
       (imputation).
     </p>
 
-    <div class="grid md:grid-cols-3 gap-6">
+    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
 
       <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
         <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
@@ -1517,6 +1526,18 @@
           structuré (S4), efficaces sur les séquences longues : une alternative
           à l\'attention pour des courbes RTE à très haute résolution
           temporelle.
+        </p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference/yuan-qiao-2024-diffusion-ts.pdf" target="_blank" rel="noopener noreferrer">Diffusion-TS (Yuan &amp; Qiao, 2024)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Modèle récent de génération de séries temporelles multivariées :
+          la diffusion est portée par un Transformer encodeur-décodeur et une
+          décomposition tendance/saisonnalité, ce qui rapproche directement le
+          DiT des signaux journaliers structurés.
         </p>
       </div>
 

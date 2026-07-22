@@ -26,8 +26,10 @@ les outils pour les télécharger et les annoter.
 | 16 | **Zhou et al. (2021)**, *Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting*, AAAI 2021 — [arXiv:2012.07436](https://arxiv.org/abs/2012.07436) | Encart « Transformers pour séries longues » (attention ProbSparse, jeux de données électriques ECL/ETT) |
 | 17 | **Wu et al. (2021)**, *Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting*, NeurIPS 2021 — [arXiv:2106.13008](https://arxiv.org/abs/2106.13008) | Encart « Transformers pour séries longues » (corrélation automatique, jeux de données électriques ECL/ETT) |
 | 18 | **Chen et al. (2018)**, *Model-Free Renewable Scenario Generation Using Generative Adversarial Networks*, IEEE Trans. Power Systems — [arXiv:1707.09676](https://arxiv.org/abs/1707.09676) | Section « Pourquoi le DiT est passé devant », point 1 (loi d'échelle / scénarios renouvelables) |
-| 19 | **Wang et al. (2023)**, *DiffLoad: Uncertainty Quantification in Energy Load Forecasting with Diffusion Model* — [arXiv:2306.01001](https://arxiv.org/abs/2306.01001) | Section « Pourquoi le DiT est passé devant », point 4 (validation par le domaine de l'énergie) |
-| 20 | **Wen et al. (2023)**, *DiffSTG: Probabilistic Spatio-Temporal Graph Forecasting with Denoising Diffusion Models*, SIGSPATIAL 2023 — [arXiv:2301.13629](https://arxiv.org/abs/2301.13629) | Section « Pourquoi le DiT est passé devant », point 4 (validation par le domaine de l'énergie) |
+| 19 | **Wang et al. (2023/2025)**, *DiffLoad: Uncertainty Quantification in Electrical Load Forecasting with the Diffusion Model*, IEEE Transactions on Power Systems — [arXiv:2306.01001](https://arxiv.org/abs/2306.01001) | Section « Pourquoi le DiT est passé devant », point 4 (validation par le domaine de l'énergie, prévision de charge avec incertitude) |
+| 20 | **Wen et al. (2023)**, *DiffSTG: Probabilistic Spatio-Temporal Graph Forecasting with Denoising Diffusion Models*, SIGSPATIAL 2023 — [arXiv:2301.13629](https://arxiv.org/abs/2301.13629) | Section « Pourquoi le DiT est passé devant », point 4 (diffusion probabiliste sur graphes spatio-temporels) |
+| 21 | **Dosovitskiy et al. (2020/2021)**, *An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale* (ViT), ICLR 2021 — [arXiv:2010.11929](https://arxiv.org/abs/2010.11929) | Sections « Vue d'ensemble » et « Encodage Positionnel » (patches traités comme tokens) |
+| 22 | **Yuan & Qiao (2024)**, *Diffusion-TS: Interpretable Diffusion for General Time Series Generation*, ICLR 2024 — [arXiv:2403.01742](https://arxiv.org/abs/2403.01742) | Sections « Pourquoi le DiT est passé devant » et « Pour aller plus loin » (diffusion + Transformer encodeur-décodeur pour séries temporelles) |
 
 Dans le cours, chaque mention de ces références est **surlignée** (style
 `.ref-link`, défini dans `src/data/App.css`) et pointe directement vers le PDF
@@ -58,8 +60,10 @@ Le script :
 4. si aucun des textes candidats n'est trouvé, ajoute tout de même le
    commentaire sous forme de note (icône commentaire) en page 1, pour ne
    perdre aucune annotation ;
-5. relancer le script sur un PDF déjà annoté n'ajoute pas de doublon : les
-   extraits déjà présents sont détectés et ignorés.
+5. relancer le script sur un PDF déjà annoté remet à jour les annotations
+   créées par le cours : les anciens surlignages/commentaires `Cours DiT -
+   Billy Thomont` sont supprimés, puis les passages courants de
+   `references.json` sont surlignés à nouveau.
 
 Les PDF annotés sont enregistrés dans ce même dossier
 (`public/reference/<fichier>.pdf`), et sont donc immédiatement servis par

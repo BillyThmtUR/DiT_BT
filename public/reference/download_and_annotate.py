@@ -21,6 +21,8 @@ de ce script, afin d'etre servis directement par l'application (liens
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -30,30 +32,33 @@ MANIFEST = HERE / "references.json"
 ANNOTATION_TITLE = "Cours DiT - Billy Thomont"
 
 
+def _ps_single_quote(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
 def load_manifest() -> list[dict]:
     return json.loads(MANIFEST.read_text(encoding="utf-8"))
 
 
 def download(url: str, dest: Path) -> None:
-    import requests
-
     if dest.exists():
         print(f"  -> {dest.name} deja present, telechargement ignore")
         return
     print(f"  -> telechargement : {url}")
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        resp = requests.get(url, timeout=60, headers=headers)
-        resp.raise_for_status()
-    except requests.exceptions.SSLError:
-        # Certains environnements (proxy sortant, magasin de certificats
-        # incomplet) cassent la verification TLS vers arxiv.org alors que
-        # la connexion elle-meme fonctionne. On retente sans verification
-        # plutot que d'abandonner le telechargement.
-        print("  -> echec de verification TLS, nouvelle tentative sans verification du certificat")
-        resp = requests.get(url, timeout=60, headers=headers, verify=False)
-        resp.raise_for_status()
-    dest.write_bytes(resp.content)
+    powershell = shutil.which("pwsh") or shutil.which("powershell")
+    if powershell is None:
+        raise RuntimeError("PowerShell introuvable pour telecharger le PDF")
+
+    command = (
+        "$ProgressPreference='SilentlyContinue'; "
+        f"Invoke-WebRequest -Uri {_ps_single_quote(url)} "
+        f"-OutFile {_ps_single_quote(str(dest))} "
+        "-Headers @{'User-Agent'='Mozilla/5.0'}"
+    )
+    subprocess.run(
+        [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
+        check=True,
+    )
     print(f"  -> enregistre : {dest}")
 
 
@@ -69,11 +74,28 @@ def _existing_excerpts(doc) -> set[str]:
     return seen
 
 
+def _remove_course_annotations(doc) -> None:
+    """Supprime les anciennes annotations creees par ce script.
+
+    Cela garde les PDF synchronises quand un extrait du cours est corrige dans
+    references.json, sans toucher aux annotations personnelles eventuelles.
+    """
+    for page in doc:
+        annot = page.first_annot
+        while annot:
+            next_annot = annot.next
+            title = annot.info.get("title", "")
+            if title.startswith(ANNOTATION_TITLE):
+                page.delete_annot(annot)
+            annot = next_annot
+
+
 def annotate(pdf_path: Path, highlights: list[dict]) -> None:
     import fitz  # PyMuPDF
 
     doc = fitz.open(pdf_path)
     fallback_index = 0
+    _remove_course_annotations(doc)
     already_annotated = _existing_excerpts(doc)
 
     for highlight in highlights:
