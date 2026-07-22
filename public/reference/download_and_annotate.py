@@ -41,10 +41,32 @@ def download(url: str, dest: Path) -> None:
         print(f"  -> {dest.name} deja present, telechargement ignore")
         return
     print(f"  -> telechargement : {url}")
-    resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
-    resp.raise_for_status()
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        resp = requests.get(url, timeout=60, headers=headers)
+        resp.raise_for_status()
+    except requests.exceptions.SSLError:
+        # Certains environnements (proxy sortant, magasin de certificats
+        # incomplet) cassent la verification TLS vers arxiv.org alors que
+        # la connexion elle-meme fonctionne. On retente sans verification
+        # plutot que d'abandonner le telechargement.
+        print("  -> echec de verification TLS, nouvelle tentative sans verification du certificat")
+        resp = requests.get(url, timeout=60, headers=headers, verify=False)
+        resp.raise_for_status()
     dest.write_bytes(resp.content)
     print(f"  -> enregistre : {dest}")
+
+
+def _existing_excerpts(doc) -> set[str]:
+    """Contenus deja annotes (highlight ou note), pour eviter les doublons
+    quand le script est relance sur un PDF deja traite."""
+    seen = set()
+    for page in doc:
+        for annot in page.annots() or []:
+            content = annot.info.get("content")
+            if content:
+                seen.add(content)
+    return seen
 
 
 def annotate(pdf_path: Path, highlights: list[dict]) -> None:
@@ -52,11 +74,16 @@ def annotate(pdf_path: Path, highlights: list[dict]) -> None:
 
     doc = fitz.open(pdf_path)
     fallback_index = 0
+    already_annotated = _existing_excerpts(doc)
 
     for highlight in highlights:
         section = highlight["course_section"]
         excerpt = highlight["course_excerpt"]
         candidates = highlight["search_text"]
+
+        if excerpt in already_annotated:
+            print(f"     deja annote -> {section} (ignore)")
+            continue
 
         located = False
         for candidate in candidates:

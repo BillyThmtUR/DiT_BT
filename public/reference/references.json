@@ -1,5 +1,66 @@
 [
   {
+    "id": "diffusion-thermodynamics",
+    "title": "Deep Unsupervised Learning using Nonequilibrium Thermodynamics",
+    "authors": "Jascha Sohl-Dickstein, Eric A. Weiss, Niru Maheswaranathan, Surya Ganguli",
+    "year": 2015,
+    "venue": "ICML 2015",
+    "arxiv_id": "1503.03585",
+    "pdf_url": "https://arxiv.org/pdf/1503.03585",
+    "filename": "sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf",
+    "course_mention": "Section « Vue d'ensemble » (l'Architecture du Diffusion Transformer) : article fondateur qui introduit le paradigme de la diffusion. Egalement référencé à l'Équation 1 (le processus forward est une chaîne de Markov de diffusion) et à l'Équation 3 (la perte dérive de la borne variationnelle introduite par cet article, simplifiée ensuite par Ho et al., 2020).",
+    "highlights": [
+      {
+        "course_section": "Vue d'ensemble - l'Architecture du Diffusion Transformer",
+        "search_text": [
+          "iterative forward diffusion process",
+          "reverse diffusion process that restores",
+          "non-equilibrium\nstatistical physics"
+        ],
+        "course_excerpt": "COURS - Vue d'ensemble : Avant le DDPM et le DiT, Sohl-Dickstein et al. (2015) ont introduit l'idee fondatrice de detruire methodiquement la structure d'une distribution de donnees via un processus de diffusion forward iteratif, puis d'apprendre le processus de diffusion inverse qui restaure cette structure : c'est exactement le schema forward/reverse repris par toutes les equations de ce cours (Equations 1 et 6)."
+      },
+      {
+        "course_section": "Equation 1 — Le Processus Forward (Bruitage de Markov)",
+        "search_text": [
+          "Markov diffusion kernel",
+          "generative Markov chain\nwhich converts",
+          "Forward Trajectory"
+        ],
+        "course_excerpt": "COURS - Equation 1 (Processus Forward) : q(x_t | x_{t-1}) = N(x_t ; sqrt(1-beta_t) x_{t-1}, beta_t I). Cette formulation est un cas particulier gaussien du cadre general introduit par Sohl-Dickstein et al. (2015) : une chaine de Markov de diffusion Tpi(y|y'; beta) qui convertit progressivement la distribution des donnees vers une distribution simple et tractable (ici une gaussienne), beta etant le taux de diffusion a chaque etape."
+      },
+      {
+        "course_section": "Equation 3 — La Fonction de Perte (l'Apprentissage)",
+        "search_text": [
+          "lower bound provided by Jensen",
+          "Training amounts to maximizing the model log likelihood",
+          "variational Bayesian methods"
+        ],
+        "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. Cette perte simplifiee (L_simple) derive d'une borne variationnelle sur la vraisemblance (obtenue via l'inegalite de Jensen) : c'est exactement le cadre d'entrainement introduit par Sohl-Dickstein et al. (2015), que Ho et al. (2020) simplifieront ensuite en la perte MSE sur le bruit utilisee ici."
+      }
+    ]
+  },
+  {
+    "id": "vae-reparam",
+    "title": "Auto-Encoding Variational Bayes",
+    "authors": "Diederik P. Kingma, Max Welling",
+    "year": 2013,
+    "venue": "ICLR 2014 (arXiv 2013)",
+    "arxiv_id": "1312.6114",
+    "pdf_url": "https://arxiv.org/pdf/1312.6114",
+    "filename": "kingma-welling-2013-vae.pdf",
+    "course_mention": "Section « Le Saut Temporel (Trick de Reparametrisation) » (Équation 2) : le « reparameterization trick » est introduit par Kingma & Welling (2013) pour rendre differentiable l'echantillonnage d'une variable aleatoire, l'idee reprise par la reparametrisation x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) epsilon.",
+    "highlights": [
+      {
+        "course_section": "Equation 2 — Le Saut Temporel (Trick de Reparametrisation)",
+        "search_text": [
+          "The reparameterization trick",
+          "reparameterization of the variational lower bound"
+        ],
+        "course_excerpt": "COURS - Equation 2 (Trick de reparametrisation) : x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) epsilon. Ce trick, qui permet d'exprimer une variable aleatoire z ~ q(z) comme une transformation deterministe z = g(epsilon, x) d'un bruit auxiliaire epsilon ~ p(epsilon), a ete introduit par Kingma & Welling (2013) pour rendre differentiable l'estimation de la borne variationnelle (VAE). Le DDPM reutilise exactement ce principe pour ecrire x_t directement en fonction de x_0 et d'un bruit gaussien epsilon, sans boucle iterative."
+      }
+    ]
+  },
+  {
     "id": "ddpm",
     "title": "Denoising Diffusion Probabilistic Models",
     "authors": "Jonathan Ho, Ajay Jain, Pieter Abbeel",
@@ -31,8 +92,8 @@
       {
         "course_section": "Equation 3 — La Fonction de Perte (l'Apprentissage)",
         "search_text": [
-          "Simplified training objective",
-          "simplified objective",
+          "training objective",
+          "Lsimple(",
           "predict the noise"
         ],
         "course_excerpt": "COURS - Equation 3 (Fonction de perte) : L = E_{t,x0,epsilon}[ ||epsilon - epsilon_theta(x_t, t)||^2 ]. L'article fondateur DDPM (Ho et al.) a prouve qu'il est mathematiquement plus stable de predire epsilon (le bruit ajoute) que x_0 (la courbe sans bruit) : le bruit a toujours la meme distribution gaussienne centree reduite, ce qui rend les gradients d'entrainement plus lisses et previsibles que d'essayer de predire des pics de consommation erratiques."

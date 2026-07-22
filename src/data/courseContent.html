@@ -101,9 +101,17 @@
         <span class="color-model">\(\epsilon_\theta\)</span> chargé de
         prédire le bruit à chaque étape.
       </p>
-      
+
+      <p class="text-slate-500 mt-2 text-lg">
+        Le paradigme sous-jacent — détruire méthodiquement la structure d\'une
+        distribution de données via un processus de diffusion, puis apprendre
+        à la restaurer — a été formalisé pour la première fois par
+        <a class="ref-link" href="/reference/sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf" target="_blank" rel="noopener noreferrer">Sohl-Dickstein et al. (<em>Deep Unsupervised Learning using Nonequilibrium Thermodynamics</em>, ICML 2015)</a>,
+        bien avant le DDPM et le DiT.
+      </p>
+
     </div>
-    
+
     <figure
       class="bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-8 mb-8 shadow-inner"
     >
@@ -264,7 +272,12 @@
         s\'assurer que la variance totale de la série ne diverge pas vers
         l'infini au fil des étapes. Sans ce terme de rétrécissement, ajouter du
         bruit continuellement ferait exploser l'amplitude de la série bien
-        au-delà des 13 325 kWh.
+        au-delà des 13 325 kWh. Cette formulation gaussienne est un cas
+        particulier du cadre général de la
+        <a class="ref-link" href="/reference/sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf" target="_blank" rel="noopener noreferrer">chaîne de Markov de diffusion introduite par Sohl-Dickstein et al. (2015)</a>,
+        que
+        <a class="ref-link" href="/reference/ho-jain-abbeel-2020-ddpm.pdf" target="_blank" rel="noopener noreferrer">Ho et al. (DDPM, 2020)</a>
+        reprennent avec des variances \(\beta_t\) fixées plutôt qu\'apprises.
       </p>
       
     </div>
@@ -422,7 +435,12 @@
           l'étape <span class="color-time">t=500</span>, appliquer l'Équation
           1 boucle par boucle 500 fois prendrait un temps de calcul infini. Il
           nous faut une formule directe depuis
-          <span class="color-signal">\(x_0\)</span>.
+          <span class="color-signal">\(x_0\)</span>. La technique qui rend
+          cela possible, le
+          <a class="ref-link" href="/reference/kingma-welling-2013-vae.pdf" target="_blank" rel="noopener noreferrer">« reparameterization trick » (Kingma &amp; Welling, 2013)</a>,
+          consiste à réécrire une variable aléatoire comme une fonction
+          déterministe d\'un bruit auxiliaire — exactement ce que fait
+          l'Équation 2 en isolant <span class="color-noise">\(\epsilon\)</span>.
         </p>
          
         <div class="pl-4 border-l-4 border-blue-400 space-y-4">
@@ -670,7 +688,11 @@
         bruit a toujours la même distribution (gaussienne centrée réduite), ce
         qui rend les gradients d\'entraînement infiniment plus lisses et
         prévisibles que d\'essayer de prédire des pics de consommation
-        erratiques.
+        erratiques. Cette perte simplifiée dérive d\'une borne variationnelle
+        sur la vraisemblance (obtenue par l\'inégalité de Jensen), le cadre
+        d\'entraînement introduit par
+        <a class="ref-link" href="/reference/sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf" target="_blank" rel="noopener noreferrer">Sohl-Dickstein et al. (2015)</a>
+        que DDPM simplifie ici en une simple MSE sur le bruit.
       </p>
       
     </div>
