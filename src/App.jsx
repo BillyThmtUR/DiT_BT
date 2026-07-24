@@ -8,45 +8,19 @@ import STORY_HTML from './data/storyContent.html?raw';
 import APP_CSS from './data/App.css?raw';
 
 /* ====== CONTENU INJECTÉ ====== */
-const QUESTIONS = [{"q": "Dans le processus forward (Éq. 1), à quoi sert le facteur \\(\\sqrt{1-\\beta_t}\\) appliqué à \\(x_{t-1}\\) ?", "options": ["À accélérer les calculs vectoriels sur GPU.", "À contenir la variance globale du signal afin d'éviter son explosion asymptotique au fil des étapes.", "À augmenter la profondeur effective du réseau de neurones."], "correct": 1}, {"q": "Quel est l'avantage principal du trick de reparamétrisation (Éq. 2) pour l'entraînement ?", "options": ["Il réduit la taille du modèle de moitié en supprimant les couches intermédiaires.", "Il impose une distribution uniforme au bruit pour stabiliser le gradient.", "Il permet d'obtenir \\(x_t\\) directement depuis \\(x_0\\) en \\(\\mathcal{O}(1)\\), sans dérouler les 1000 étapes de bruitage."], "correct": 2}, {"q": "Que vaut approximativement \\(\\bar{\\alpha}_t\\) à la dernière itération (\\(t = 999\\)) ?", "options": ["Une valeur proche de 1 : le signal original est quasi-intégralement préservé.", "Exactement 0,5 : signal et bruit sont à parts égales.", "Une valeur tendant vers 0 : le bruit blanc gaussien domine totalement."], "correct": 2}, {"q": "Quel est l'objectif prédictif du modèle \\(\\epsilon_\\theta\\) lors de la minimisation de la fonction de perte (Éq. 3) ?", "options": ["Estimer directement la courbe de consommation sans bruit \\(x_0\\).", "Identifier le vecteur de bruit gaussien \\(\\epsilon\\) injecté lors de la corruption forward.", "Prédire les pas de temps futurs à partir de la série temporelle brute."], "correct": 1}, {"q": "Dans le mécanisme d'auto-attention, pourquoi divise-t-on le produit \\(QK^\\top\\) par \\(\\sqrt{d_k}\\) ?", "options": ["Pour normaliser les poids entre 0 et 1 avant la softmax, indépendamment de la séquence.", "Pour éviter que les scores ne croissent avec la dimension et saturent la softmax, ce qui tuerait les gradients.", "Pour réduire le coût quadratique de l'attention à un coût linéaire."], "correct": 1}, {"q": "Quelle est la différence fondamentale entre le champ réceptif d'un U-Net convolutif et celui d'un Transformer ?", "options": ["Le U-Net a un champ réceptif global dès la première couche grâce aux skip-connections.", "Le Transformer dispose d'un champ réceptif global dès la première couche, là où le U-Net ne l'acquiert que progressivement via empilement et pooling.", "Les deux architectures ont un champ réceptif identique ; seul le coût de calcul diffère."], "correct": 1}, {"q": "Dans l'encodage positionnel (Éq. 4), à quoi correspondent les dimensions de haute fréquence (indices \\(i\\) faibles) ?", "options": ["Elles encodent le contexte global (matin vs soir) grâce à des oscillations lentes.", "Elles oscillent vite pour différencier des patches temporellement proches (ex. 10h de 11h).", "Elles encodent l'amplitude maximale observée (13 325 kWh) pour calibrer la normalisation."], "correct": 1}, {"q": "Dans l'adaLN-Zero (Éq. 5), quelle est la conséquence directe d'initialiser \\(\\alpha = 0\\) en début d'entraînement ?", "options": ["Le bloc se comporte comme une identité (\\(x_{l+1} = x_l\\)), stabilisant les gradients dès les premières itérations.", "Le bruit résiduel du vecteur latent est effacé préventivement.", "L'attention multi-têtes est désactivée pour économiser de la mémoire GPU."], "correct": 0}, {"q": "Lors du reverse process (Éq. 6), pourquoi ajoute-t-on le terme stochastique \\(\\sigma_t z\\) à chaque étape (sauf la dernière) ?", "options": ["Pour compenser la perte d'énergie due à la soustraction itérative du bruit estimé.", "Pour forcer le modèle à explorer toutes les étapes forward en sens inverse.", "Pour prévenir le lissage excessif et conserver les variations asymétriques propres aux charges électriques (dynamique de Langevin)."], "correct": 2}, {"q": "Pourquoi l'algorithme de génération utilise-t-il les poids EMA plutôt que les poids d'entraînement bruts ?", "options": ["Les poids EMA sont plus légers en mémoire car ils fusionnent les couches redondantes.", "L'EMA filtre la variance due aux batchs atypiques et représente la tendance consolidée de ~1000 itérations, produisant des courbes générées plus stables.", "Les poids bruts sont réservés à l'inférence conditionnelle sur de nouvelles données RTE."], "correct": 1}];
+const QUESTIONS = [{"q": "Dans le processus forward (Éq. 1), à quoi sert le facteur \\(\\sqrt{1-\\beta_t}\\) appliqué à \\(x_{t-1}\\) ?", "options": ["À accélérer les calculs vectoriels sur GPU.", "À contenir la variance globale du signal afin d'éviter son explosion asymptotique au fil des étapes.", "À augmenter la profondeur effective du réseau de neurones."], "correct": 1}, {"q": "Quel est l'avantage principal du trick de reparamétrisation (Éq. 2) pour l'entraînement ?", "options": ["Il réduit la taille du modèle de moitié en supprimant les couches intermédiaires.", "Il impose une distribution uniforme au bruit pour stabiliser le gradient.", "Il permet d'obtenir \\(x_t\\) directement depuis \\(x_0\\) en \\(\\mathcal{O}(1)\\), sans dérouler les 1000 étapes de bruitage."], "correct": 2}, {"q": "Que vaut approximativement \\(\\bar{\\alpha}_t\\) à la dernière itération (\\(t = 999\\)) ?", "options": ["Une valeur proche de 1 : le signal original est quasi-intégralement préservé.", "Exactement 0,5 : signal et bruit sont à parts égales.", "Une valeur tendant vers 0 : le bruit blanc gaussien domine totalement."], "correct": 2}, {"q": "Quel est l'objectif prédictif du modèle \\(\\epsilon_\\theta\\) lors de la minimisation de la fonction de perte (Éq. 3) ?", "options": ["Estimer directement la courbe de consommation sans bruit \\(x_0\\).", "Identifier le vecteur de bruit gaussien \\(\\epsilon\\) injecté lors de la corruption forward.", "Prédire les pas de temps futurs à partir de la série temporelle brute."], "correct": 1}, {"q": "Dans le mécanisme d'auto-attention, pourquoi divise-t-on le produit \\(QK^\\top\\) par \\(\\sqrt{d_k}\\) ?", "options": ["Pour normaliser les poids entre 0 et 1 avant la softmax, indépendamment de la séquence.", "Pour éviter que les scores ne croissent avec la dimension et saturent la softmax, ce qui affaiblirait fortement les gradients.", "Pour réduire le coût quadratique de l'attention à un coût linéaire."], "correct": 1}, {"q": "Quelle est la différence fondamentale entre le champ réceptif d'un U-Net convolutif et celui d'un Transformer ?", "options": ["Le U-Net a un champ réceptif global dès la première couche grâce aux skip-connections.", "Le Transformer dispose d'un champ réceptif global dès la première couche, là où le U-Net ne l'acquiert que progressivement via empilement et pooling.", "Les deux architectures ont un champ réceptif identique ; seul le coût de calcul diffère."], "correct": 1}, {"q": "Dans l'encodage positionnel (Éq. 4), à quoi correspondent les dimensions de haute fréquence (indices \\(i\\) faibles) ?", "options": ["Elles encodent le contexte global (matin vs soir) grâce à des oscillations lentes.", "Elles oscillent vite pour différencier des patches temporellement proches (ex. 10h de 11h).", "Elles encodent l'amplitude maximale observée (13 325 kWh) pour calibrer la normalisation."], "correct": 1}, {"q": "Dans l'adaLN-Zero (Éq. 5), quelle est la conséquence directe d'initialiser \\(\\alpha = 0\\) en début d'entraînement ?", "options": ["Le bloc se comporte comme une identité (\\(x_{l+1} = x_l\\)), stabilisant les gradients dès les premières itérations.", "Le bruit résiduel du vecteur latent est effacé préventivement.", "L'attention multi-têtes est désactivée pour économiser de la mémoire GPU."], "correct": 0}, {"q": "Lors du reverse process (Éq. 6), pourquoi ajoute-t-on le terme stochastique \\(\\sigma_t z\\) à chaque étape (sauf la dernière) ?", "options": ["Pour compenser la perte d'énergie due à la soustraction itérative du bruit estimé.", "Pour forcer le modèle à explorer toutes les étapes forward en sens inverse.", "Pour prévenir le lissage excessif et conserver les variations asymétriques propres aux charges électriques (dynamique de Langevin)."], "correct": 2}, {"q": "Pourquoi l'algorithme de génération utilise-t-il les poids EMA plutôt que les poids d'entraînement bruts ?", "options": ["Les poids EMA sont plus légers en mémoire car ils fusionnent les couches redondantes.", "L'EMA filtre la variance due aux batchs atypiques et représente la tendance consolidée de ~1000 itérations, produisant des courbes générées plus stables.", "Les poids bruts sont réservés à l'inférence conditionnelle sur de nouvelles données RTE."], "correct": 1}];
 const EXPLANATIONS = [
-  "Le facteur garde l'energie du signal sous controle pendant que le bruit est ajoute progressivement.",
-  "La reparametrisation permet de calculer directement n'importe quel x_t depuis x_0, ce qui rend l'entrainement beaucoup plus efficace.",
-  "A la fin du bruitage, alpha barre est presque nul : le signal initial a quasiment disparu dans le bruit gaussien.",
-  "Le modele apprend a retrouver le bruit ajoute, car cette cible est plus stable que la reconstruction directe de la courbe propre.",
+  "Le facteur maintient l'énergie du signal sous contrôle pendant l'ajout progressif du bruit.",
+  "La reparamétrisation permet de calculer directement n'importe quel x_t depuis x_0, ce qui accélère fortement l'entraînement.",
+  "À la fin du bruitage, alpha barre est presque nul : le signal initial a quasiment disparu dans le bruit gaussien.",
+  "Le modèle apprend à retrouver le bruit ajouté, car cette cible est plus stable que la reconstruction directe de la courbe initiale.",
   "Sans la division par racine de d_k, les scores d'attention deviennent trop grands et la softmax peut saturer.",
   "L'attention du Transformer met tous les tokens en relation tout de suite ; le U-Net construit ce contexte global plus progressivement.",
-  "Les hautes frequences changent vite, elles servent donc a distinguer des positions temporelles proches.",
-  "Avec alpha initialise a zero, la branche residuelle est neutre au depart : le bloc commence comme une identite stable.",
-  "Le terme aleatoire conserve de la diversite dans la generation et evite une courbe trop lissee.",
-  "L'EMA lisse les variations des poids d'entrainement et donne souvent une generation plus stable."
+  "Les hautes fréquences varient rapidement et permettent de distinguer des positions temporelles proches.",
+  "Avec alpha initialisé à zéro, la branche résiduelle est neutre au départ : le bloc commence comme une identité stable.",
+  "Le terme aléatoire préserve la diversité de la génération et évite une courbe trop lissée.",
+  "L'EMA lisse les variations des poids d'entraînement et produit généralement une génération plus stable."
 ];
-
-const ROCKET_ASCII = String.raw`
-              /\              
-             /  \             
-            /____\            
-           /|    |\           
-          /_|_()_|_\          
-            |    |            
-            |BILLY           
-            | DiT|            
-           /|____|\           
-          /_/    \_\          
-             /\/\             
-            /_\/_\            
-
-        .-~~~~~~~~~~-.        
-     .-(    SMOKE     )-.     
-   .'   (   CLOUDS   )   '.   
-  (   .-~~~~~~~~~~~~~~-.   )  
-   '-(__________________)-'   
-`;
-
-if (typeof window !== "undefined") {
-  console.log("%c" + ROCKET_ASCII, "color:#f8fafc;font-family:Consolas, Monaco, monospace;font-size:13px;font-weight:700;line-height:1.18");
-  console.log("%cBilly Thomont · DiT launch sequence ready", "color:#60a5fa;font-weight:800");
-}
 
 /* ====== KaTeX (chargé à la volée depuis CDN) ====== */
 let katexPromise = null;
@@ -258,7 +232,7 @@ function Intro({ go }) {
               <div className="choice-ico"><BookOpen size={22} /></div>
               <h3>Le Cours</h3>
             </div>
-            <p className="choice-desc">Équations détaillées, démonstrations pas-à-pas, deep-dives mathématiques et comparaison U-Net / Transformer.</p>
+            <p className="choice-desc">Équations détaillées, démonstrations étape par étape, analyses mathématiques et comparaison entre U-Net et Transformer.</p>
             <div className="choice-foot">Lire le cours <ArrowRight size={13} /></div>
           </button>
 
@@ -274,7 +248,7 @@ function Intro({ go }) {
 
         <button className="quiz-cta fade" style={{ animationDelay: "600ms" }} onClick={() => go("quiz")}>
           <ClipboardCheck size={17} />
-          <span>Contrôle des connaissances — 10 questions</span>
+          <span>Contrôle des connaissances : 10 questions</span>
           <ArrowRight size={15} />
         </button>
 
@@ -354,7 +328,7 @@ function Quiz({ go }) {
   }
 
   let rank;
-  if (score === total) rank = { t: "Niveau : Expert", c: "#60a5fa", d: "Maîtrise parfaite — processus de Markov, attention, adaLN et dynamique de génération n'ont plus de secrets." };
+  if (score === total) rank = { t: "Niveau : Expert", c: "#60a5fa", d: "Maîtrise complète : le processus de Markov, l'attention, l'adaLN et la dynamique de génération sont acquis." };
   else if (score >= 7) rank = { t: "Niveau : Solide", c: "#34d399", d: "Très bonne compréhension. Quelques détails techniques restent à consolider, mais la structure globale est acquise." };
   else if (score >= 4) rank = { t: "Niveau : En construction", c: "#fbbf24", d: "Les bases sont là. Relisez les sections sur le forward process, l'attention et l'EMA pour solidifier l'ensemble." };
   else rank = { t: "Niveau : À reprendre", c: "#f87171", d: "Pas grave : le Diffusion Transformer n'est pas une promenade au Barachois. Reprenez le cours, puis retentez." };

@@ -1,58 +1,58 @@
 # Diffusion Transformer (DiT)
-### Cours interactif — Billy Thomont
-**Université de La Réunion · EnergyLab**
 
----
+## Présentation
 
-## Démarrage rapide
+Ce projet propose un module interactif conçu par Billy Thomont dans le cadre de ses travaux de doctorat à l’Université de La Réunion, au sein d’EnergyLab.
+
+L’application présente le fonctionnement d’un Diffusion Transformer appliqué à la génération de séries synthétiques de consommation électrique. Elle réunit un cours illustré, une fable pédagogique et un contrôle des connaissances.
+
+## Installation
 
 ```bash
-# 1. Installer les dépendances
 npm install
-
-# 2. Lancer le serveur de développement (ouvre http://localhost:3000)
 npm run dev
 ```
 
-## Build de production
+Le serveur de développement est accessible à l’adresse indiquée par Vite, généralement `http://localhost:3000`.
+
+## Production
 
 ```bash
-npm run build     # génère dist/
-npm run preview   # prévisualise la build
+npm run build
+npm run preview
 ```
 
----
+La commande `npm run build` génère le dossier `dist/`. La commande `npm run preview` permet de vérifier localement la version produite.
 
-## Structure
+## Organisation du projet
 
-```
+```text
 dit-thomont/
-├── index.html          # page hôte + Tailwind Play CDN
-├── vite.config.js      # configuration Vite
+├── index.html
+├── vite.config.js
 ├── package.json
 └── src/
-    ├── main.jsx        # point d'entrée React
-    └── App.jsx         # application complète (cours + histoire + quiz)
+    ├── main.jsx
+    ├── App.jsx
+    ├── components/
+    └── data/
 ```
 
-## Contenu
+`App.jsx` gère la navigation et les modules interactifs. Les contenus du cours et de l’histoire sont séparés dans le dossier `src/data` afin de faciliter leur maintenance.
 
-| Vue | Description |
-|-----|-------------|
-| **Accueil** | Écran d'entrée avec choix du parcours |
-| **Cours** | Équations, démonstrations, Transformer vs U-Net |
-| **Histoire illustrée** | Fable pédagogique — chaque variable est un personnage |
-| **Contrôle** | Quiz interactif 10 questions avec score et niveau |
+## Contenu pédagogique
 
-## Dépendances runtime (CDN)
+| Vue | Contenu |
+| --- | --- |
+| Accueil | Présentation du module et choix du parcours |
+| Cours | Équations, démonstrations et comparaison entre Transformer et U-Net |
+| Histoire illustrée | Explication narrative des principales variables du modèle |
+| Contrôle | Dix questions avec correction et score final |
 
-- **Tailwind Play CDN** — style du contenu cours injecté dynamiquement
-- **KaTeX 0.16.9** (cdnjs) — rendu des équations mathématiques
-- **Google Fonts** — Fraunces, Spectral, IBM Plex Mono, Manrope
+## Dépendances utilisées à l’exécution
 
-> Pour une build production sans CDN externe, remplacer Tailwind CDN
-> par un setup `tailwindcss` + `postcss`, et KaTeX par `katex` npm.
+Tailwind Play CDN est utilisé pour la mise en forme du cours. KaTeX 0.16.9 assure le rendu des équations. Les polices Fraunces, Spectral, IBM Plex Mono et Manrope sont chargées depuis Google Fonts.
 
----
+Pour une mise en production totalement autonome, Tailwind Play CDN peut être remplacé par une configuration `tailwindcss` avec `postcss`, et KaTeX peut être installé comme dépendance npm.
 
-*Billy Thomont · Université de La Réunion · EnergyLab · 2025–2026*
+Billy Thomont, Université de La Réunion, EnergyLab, 2025–2026.
