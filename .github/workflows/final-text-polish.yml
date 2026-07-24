@@ -1,0 +1,54 @@
+name: Finition éditoriale ponctuelle
+
+on:
+  push:
+    branches:
+      - cleanup/humanize-texts
+    paths:
+      - .github/workflows/final-text-polish.yml
+
+permissions:
+  contents: write
+
+jobs:
+  polish-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+        with:
+          ref: cleanup/humanize-texts
+          fetch-depth: 0
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Appliquer les dernières corrections
+        run: python scripts/final_text_polish.py
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérifier la compilation
+        run: npm run build
+
+      - name: Enregistrer les corrections validées
+        run: |
+          rm -f scripts/final_text_polish.py .github/workflows/final-text-polish.yml
+          git config user.name "BillyThmtUR"
+          git config user.email "153058930+BillyThmtUR@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Aucune modification à enregistrer."
+            exit 0
+          fi
+          git commit -m "Finalise les textes et valide la compilation"
+          git push origin HEAD:cleanup/humanize-texts
