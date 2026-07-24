@@ -269,7 +269,7 @@
       </h4>
 
       <p class="text-sm text-slate-600">
-        Cette équation est une <em>Chaîne de Markov</em>. L'état \(x_t\) ne
+        Cette équation décrit une <em>chaîne de Markov</em>. L'état \(x_t\)
         dépend uniquement de \(x_{t-1}\). La moyenne de la gaussienne est légèrement
         rétrécie par le facteur \(\sqrt{1-\beta_t}\). Pourquoi ? Pour
         s'assurer que la variance totale de la série ne diverge pas vers
@@ -296,7 +296,7 @@
         <ul class="space-y-4 text-slate-700">
 
           <li>
-            <strong>\( q(...) \) : probabilité de transition :</strong> La
+            <strong>\( q(...) \) : probabilité de transition</strong>. La
             distribution de probabilité décrivant comment on passe d'un état à
             l'autre.
           </li>
@@ -304,15 +304,15 @@
           <li>
             <strong
               ><span class="color-noise">\(\beta_t\)</span> : variance du
-              bruit :</strong
+              bruit</strong
             >
             C'est la quantité de "désordre" injectée. Elle n'est pas constante
-            : elle est minuscule au début (ex: \(10^{-4}\)) et augmente avec
+            : elle est minuscule au début (par exemple \(10^{-4}\)) et augmente avec
             <span class="color-time">\(t\)</span> (jusqu'à \(0.02\)).
           </li>
 
           <li>
-            <strong>\( I \) : matrice identité (48 × 48) :</strong> Signifie que
+            <strong>\( I \) : matrice identité (48 × 48)</strong>. Elle indique que
             le bruit ajouté à 10 h est strictement indépendant du bruit ajouté
             à 10 h 30.
           </li>
