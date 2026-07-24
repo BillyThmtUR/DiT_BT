@@ -41,7 +41,7 @@
         <h2>La longue nuit du brouillard</h2>
     </section>
     <p>Dans le royaume vivait une créature impalpable&nbsp;: <span class="v noise">ε</span>, la
-        <strong>Brume</strong>. Pur hasard, sans forme, tirée d'une loi gaussienne parfaitement neutre : <span class="v
+        <strong>Brume</strong>. Pur hasard, sans forme, tirée d'une loi gaussienne parfaitement neutre. <span class="v
             noise">ε ~ 𝒩(0, I)</span>&nbsp;: moyenne nulle, aucune préférence, du bruit blanc. Chaque nuit, la Brume
         venait effacer un peu plus le Jour.
     </p>
@@ -92,8 +92,8 @@
         <h2>Le raccourci qui défie mille nuits</h2>
     </section>
     <p>Voilà l'ennui&nbsp;: pour observer le Jour à l'étape 700, fallait-il vraiment endurer 700 nuits de
-        brume l'une après l'autre&nbsp;? Ce serait épuisant : et pour entraîner notre futur héros, il faudra le faire
-        des millions de fois.</p>
+        brume l'une après l'autre&nbsp;? Ce serait beaucoup trop coûteux, d'autant que l'opération doit être répétée
+        des millions de fois pendant l'entraînement.</p>
     <p>Les mathématiciens du royaume découvrirent alors un raccourci mathématique.
         Comme additionner deux gaussiennes en redonne une seule, toutes ces nuits successives se résument en <strong>une
             seule formule</strong>. On peut téléporter le Jour directement à n'importe quelle étape <span class="v
@@ -106,8 +106,8 @@
         Jour véritable, une part <span class="v noise">√(1−<span class="ov">α</span>ₜ)</span> de Brume, mélangées
         d'un seul geste. Au début (<span class="v tim">t</span> petit) le mélange est presque tout signal&nbsp;; à la
         fin, presque tout bruit. Le scribe peut
-        désormais fabriquer, instantanément, un Jour à moitié effacé, à 3&nbsp;% effacé, à 97&nbsp;% effacé : selon le
-        <span class="v tim">t</span> qu'il choisit. C'est ce raccourci qui rend l'entraînement possible.
+        désormais fabriquer, instantanément, un Jour à moitié effacé, à 3&nbsp;% effacé, à 97&nbsp;% effacé, selon la valeur de
+        <span class="v tim">t</span> choisie. C'est ce raccourci qui rend l'entraînement possible.
     </p>
     <!-- CH 3 : THE APPRENTICE -->
     <section class="chap"><span class="num">CHAPITRE III : NAISSANCE DU
@@ -115,13 +115,13 @@
         <h2>Un peintre aveugle vient au monde</h2>
     </section>
     <p class="lead">C'est ici qu'entre notre héros. On l'appela <span class="v mod">ε_θ</span>, le
-        Devin : un peintre dont la mission n'était pas de peindre le Jour, mais quelque chose de bien plus subtil&nbsp;:
+        Devin, un peintre dont la mission n'était pas de peindre le Jour, mais quelque chose de bien plus subtil&nbsp;:
         <strong>deviner exactement quelle Brume avait été ajoutée</strong>. Montrez-lui une courbe à moitié effacée,
         dites-lui à quelle étape <span class="v tim">t</span> elle se trouve, et il doit pointer du doigt&nbsp;:
         «&nbsp;voilà le bruit <span class="v noise">ε</span> qu'on t'a jeté dessus&nbsp;».
     </p>
     <p>Son cerveau, ce
-        sont ses <strong>poids</strong> <span class="v mod">θ</span> : quelque 7,6&nbsp;millions de petits boutons
+        sont ses <strong>poids</strong> <span class="v mod">θ</span>, soit quelque 7,6&nbsp;millions de petits boutons
         réglables. À sa naissance, ils sont tirés au hasard&nbsp;: le Devin est un peintre aveugle qui ne devine rien,
         qui répond n'importe quoi. Tout l'enjeu de l'histoire sera de tourner patiemment ces millions de boutons jusqu'à
         ce qu'il voie clair.</p>
@@ -153,7 +153,7 @@
     <h3 style="font-family:var(--display);font-weight:600;font-size:22px;margin-top:34px">① L'horloge sinusoïdale</h3>
     <p>Premier problème&nbsp;: un morceau ne sait pas <em>quand</em> il a lieu. Or 8 h du matin et 20 h, ce n'est pas
         pareil. On agrafe donc à chaque morceau une <strong>signature temporelle</strong> faite de sinus et de cosinus
-        de fréquences différentes : l'encodage positionnel. Les dimensions de <span class="v time">haute
+        de fréquences différentes. C'est l'encodage positionnel. Les dimensions de <span class="v time">haute
             fréquence</span> oscillent vite et distinguent les instants proches (10 h de 11 h)&nbsp;; les dimensions de
         <span class="v time">basse fréquence</span> oscillent lentement et donnent le grand contexte (matin contre
         soir). Une horloge à plusieurs aiguilles, en somme.
@@ -392,6 +392,6 @@
     <hr class="soft">
     <p style="text-align:center;font-family:var(--display);font-style:italic;font-size:21px;color:var(--ink-soft)">Et
         c'est ainsi que, chaque fois qu'on lui tend un peu de brouillard, le Devin y dessine une journée qui n'a jamais
-        existé : mais qui aurait très bien pu.</p>
+        existé, mais qui aurait très bien pu.</p>
 </main>
 <footer>FIN · une fable pour comprendre le Diffusion Transformer</footer>

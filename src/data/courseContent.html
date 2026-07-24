@@ -103,9 +103,9 @@
       </p>
 
       <p class="text-slate-500 mt-2 text-lg">
-        Le paradigme sous-jacent, détruire méthodiquement la structure d'une
-        distribution de données via un processus de diffusion, puis apprendre
-        à la restaurer, a été formalisé pour la première fois par
+        Le paradigme sous-jacent consiste à détruire méthodiquement la structure d'une
+        distribution de données par un processus de diffusion, puis à apprendre
+        à la restaurer. Il a été formalisé pour la première fois par
         <a class="ref-link" href="/reference/sohl-dickstein-et-al-2015-nonequilibrium-thermodynamics.pdf" target="_blank" rel="noopener noreferrer">Sohl-Dickstein et al. (<em>Deep Unsupervised Learning using Nonequilibrium Thermodynamics</em>, ICML 2015)</a>,
         bien avant le DDPM et le DiT.
       </p>
@@ -270,7 +270,7 @@
 
       <p class="text-sm text-slate-600">
         Cette équation est une <em>Chaîne de Markov</em>. L'état \(x_t\) ne
-        dépend QUE de \(x_{t-1}\). La moyenne de la gaussienne est légèrement
+        dépend uniquement de \(x_{t-1}\). La moyenne de la gaussienne est légèrement
         rétrécie par le facteur \(\sqrt{1-\beta_t}\). Pourquoi ? Pour
         s'assurer que la variance totale de la série ne diverge pas vers
         l'infini au fil des étapes. Sans ce terme de rétrécissement, ajouter du
@@ -441,7 +441,7 @@
           cela possible, le
           <a class="ref-link" href="/reference/kingma-welling-2013-vae.pdf" target="_blank" rel="noopener noreferrer">« reparameterization trick » (Kingma &amp; Welling, 2013)</a>,
           consiste à réécrire une variable aléatoire comme une fonction
-          déterministe d'un bruit auxiliaire, exactement ce que fait
+          déterministe d'un bruit auxiliaire. C'est précisément ce que fait
           l'Équation 2 en isolant <span class="color-noise">\(\epsilon\)</span>.
         </p>
 
@@ -1068,7 +1068,7 @@
       <a class="ref-link" href="/reference/wu-et-al-2021-autoformer.pdf" target="_blank" rel="noopener noreferrer">Autoformer (Wu et al., 2021)</a>
       remplace l'attention point-à-point par une corrélation automatique entre
       sous-séquences. Les deux sont validés sur des jeux de données de
-      consommation électrique (ECL, ETT), proches en nature de nos courbes
+      consommation électrique (ECL, ETT), dont la nature est proche de celle de nos courbes
       RTE.
     </p>
 
