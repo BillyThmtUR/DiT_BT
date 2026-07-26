@@ -359,3 +359,23 @@ html,body,#root{min-height:100%;margin:0}body{background:var(--bg-color);color:v
 [data-theme='dark'] .author-block{background:#0b1527;border:none;box-shadow:9px 9px 24px rgba(0,0,0,.34),-9px -9px 24px rgba(255,255,255,.025)}
 [data-theme='dark'] .bt-mono{background:#0b1527!important;border:none;color:#cbd5e1;box-shadow:inset 5px 5px 12px rgba(0,0,0,.34),inset -5px -5px 12px rgba(255,255,255,.035)}
 [data-theme='dark'] .author-firstname,[data-theme='dark'] .author-lastname{text-shadow:none!important;color:#d1d5db!important;-webkit-text-fill-color:#d1d5db!important}
+
+/* ── Sélecteur de modèle (landing) : DiT vs WGAN-GP ── */
+.c-topic-dit .choice-ico{color:#93c5fd}
+.c-topic-wgan .choice-ico{color:#fcd34d}
+.c-topic-dit .choice-foot{color:#60a5fa}
+.c-topic-wgan .choice-foot{color:#fbbf24}
+[data-theme='light'] .c-topic-dit .choice-ico{background:rgba(248,250,252,.82)!important;color:#1d4ed8;box-shadow:inset 0 0 0 1px rgba(147,197,253,.62)!important}
+[data-theme='light'] .c-topic-wgan .choice-ico{background:rgba(255,251,235,.86)!important;color:#b45309;box-shadow:inset 0 0 0 1px rgba(252,211,77,.72)!important}
+[data-theme='light'] .c-topic-dit .choice-foot{color:#1d4ed8}
+[data-theme='light'] .c-topic-wgan .choice-foot{color:#b45309}
+[data-theme='dark'] .c-topic-dit .choice-ico{color:#93c5fd;box-shadow:inset 0 0 0 1px rgba(96,165,250,.25),0 20px 52px -42px rgba(37,99,235,.72)!important}
+[data-theme='dark'] .c-topic-wgan .choice-ico{background:rgba(45,30,10,.82)!important;color:#fbbf24;box-shadow:inset 0 0 0 1px rgba(251,191,36,.28),0 20px 52px -42px rgba(217,119,6,.72)!important}
+[data-theme='dark'] .c-topic-dit .choice-foot{color:#93c5fd}
+[data-theme='dark'] .c-topic-wgan .choice-foot{color:#fbbf24}
+
+/* ── Retour au sélecteur de modèle ── */
+.back-to-landing{display:inline-flex;align-items:center;gap:8px;margin-top:26px;background:transparent;border:none;box-shadow:none;padding:8px 4px;font-size:13px;font-weight:700;color:#94a3b8;cursor:pointer;transition:color .18s}
+.back-to-landing:hover{color:#e2e8f0}
+[data-theme='light'] .back-to-landing{color:#64748b}
+[data-theme='light'] .back-to-landing:hover{color:#0f172a}

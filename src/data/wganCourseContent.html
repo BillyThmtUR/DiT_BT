@@ -1,0 +1,1292 @@
+<header class="bg-white shadow-md border-b border-slate-200 py-16 px-6 mb-12">
+
+  <div class="max-w-6xl mx-auto">
+
+    <div class="flex justify-between items-start mb-8">
+
+      <div></div>
+
+    </div>
+
+    <h1 class="text-5xl font-black text-slate-900 tracking-tight mb-4">
+      Wasserstein GAN avec Gradient Penalty (WGAN-GP)
+    </h1>
+
+    <!-- Contexte Data -->
+    <div class="bg-slate-800 text-white p-6 rounded-xl shadow-inner mb-8">
+
+      <h3
+        class="text-lg font-bold text-slate-200 mb-2 uppercase tracking-wide text-sm"
+      >
+        Contexte des données (RTE Île-de-France)
+      </h3>
+
+      <p class="text-sm text-slate-300 leading-relaxed">
+         Nous travaillons sur des séquences journalières. Une journée est
+        représentée par un vecteur de
+        <span class="text-emerald-400 font-bold">48 pas de temps</span>
+        (résolution demi-horaire). L'amplitude maximale observée est de
+        <span class="text-emerald-400 font-bold">13 325 kWh</span>. Avant
+        d'entrer dans le modèle, la série est normalisée (par exemple entre -1 et 1)
+        pour stabiliser l'apprentissage adversarial.
+      </p>
+
+    </div>
+
+    <!-- Légende -->
+    <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
+
+      <h3
+        class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4"
+      >
+        Lecture des équations
+      </h3>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-emerald-500"></div>
+          <span class="text-slate-700"
+            ><b>Signal et données</b> <br />\( (x, P_{data}, P_g) \)</span
+          >
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-red-500"></div>
+          <span class="text-slate-700"
+            ><b>Bruit latent</b> <br />\( (z, P_z) \)</span
+          >
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-blue-500"></div>
+          <span class="text-slate-700"
+            ><b>Générateur</b> <br />\( (G_\theta, \theta) \)</span
+          >
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded shadow-sm bg-violet-500"></div>
+          <span class="text-slate-700"
+            ><b>Discriminateur / Critique</b> <br />\( (D_\phi, f_w, w) \)</span
+          >
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</header>
+<main class="max-w-6xl mx-auto px-6 space-y-20">
+
+  <!-- VUE D'ENSEMBLE -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+
+    <div class="mb-6">
+
+      <span
+        class="uppercase tracking-widest text-xs font-black text-blue-500 mb-2 block"
+        >Vue d'ensemble</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        Le duel entre le Générateur et le Discriminateur
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        Contrairement au Diffusion Transformer, qui apprend seul à partir d'un
+        bruitage progressif, le GAN repose sur un jeu à deux joueurs qui
+        s'affrontent. Ce paradigme a été introduit par
+        <a class="ref-link" href="/reference-wgan/goodfellow-et-al-2014-gan.pdf" target="_blank" rel="noopener noreferrer">Goodfellow et al. (<em>Generative Adversarial Networks</em>, NeurIPS 2014)</a>.
+      </p>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div>
+
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          Les deux joueurs
+        </h3>
+
+        <ul class="space-y-4 text-slate-700">
+
+          <li>
+            <strong
+              ><span class="color-time">\(G_\theta : z \to x\)</span>, le
+              Générateur :</strong
+            >
+            il prend en entrée du bruit aléatoire
+            <span class="color-noise">\(z \sim P_z\)</span> (en général
+            \(\mathcal{N}(0,I)\)) et le transforme en une courbe de
+            consommation artificielle
+            <span class="color-signal">\(x\)</span>. Ses poids
+            <span class="color-time">\(\theta\)</span> définissent
+            entièrement son comportement.
+          </li>
+
+          <li>
+            <strong
+              ><span class="color-model">\(D_\phi : x \to [0,1]\)</span>, le
+              Discriminateur :</strong
+            >
+            il prend en entrée une courbe
+            <span class="color-signal">\(x\)</span> (réelle ou générée) et lui
+            associe une probabilité d'être réelle, comprise entre 0 et 1. Ses
+            poids <span class="color-model">\(\phi\)</span> définissent son
+            jugement.
+          </li>
+
+          <li>
+            <strong
+              ><span class="color-signal">\(P_{data}(x)\)</span> :</strong
+            >
+            la distribution réelle des courbes RTE — inconnue, c'est
+            précisément ce que le Générateur doit apprendre à imiter.
+          </li>
+
+        </ul>
+
+      </div>
+
+      <div class="space-y-6">
+
+        <div
+          class="bg-violet-50 border border-violet-200 p-6 rounded-2xl shadow-sm"
+        >
+
+          <h4
+            class="font-bold text-violet-900 mb-3 uppercase tracking-wide text-xs"
+          >
+            Le jeu à somme nulle
+          </h4>
+
+          <p class="text-sm text-violet-800 leading-relaxed">
+            Le Discriminateur veut devenir un détecteur de faux parfait :
+            proche de 1 sur le vrai, proche de 0 sur le faux. Le Générateur,
+            lui, veut tromper ce détecteur : il n'a jamais accès aux courbes
+            réelles, seulement au retour du Discriminateur sur ses propres
+            créations. Les deux réseaux s'entraînent simultanément, chacun
+            rendant la tâche de l'autre plus difficile.
+          </p>
+
+        </div>
+
+        <div
+          class="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-2xl"
+        >
+
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-indigo-500 mb-1 block"
+            >À retenir</span
+          >
+          <h4 class="font-bold text-indigo-900 text-lg">
+            Pas de bruitage, pas de pas de temps
+          </h4>
+
+          <p class="text-indigo-800 text-sm mt-2 leading-relaxed">
+            Le GAN ne détruit pas progressivement une courbe réelle comme le
+            fait la diffusion. Le Générateur produit la courbe en un seul
+            passage avant à partir de bruit pur. Toute la difficulté se
+            déplace donc dans la <strong>fonction de perte</strong> qui
+            oppose les deux réseaux.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Equation 1 : Objectif minimax -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative"
+  >
+
+    <div
+      class="absolute -left-4 top-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      1
+    </div>
+
+    <div class="mb-6">
+
+      <h2 class="text-3xl font-black text-slate-800">
+        L'objectif minimax du GAN classique
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        Une seule équation résume tout le duel.
+      </p>
+
+    </div>
+
+    <div class="math-box text-xl md:text-2xl text-center">
+       $$ \min_{\color{#3b82f6}{G}} \max_{\color{#8b5cf6}{D}}
+      \; \mathcal{L}_{GAN}(\color{#3b82f6}{G},\color{#8b5cf6}{D}) =
+      \mathbb{E}_{\color{#10b981}{x}\sim \color{#10b981}{P_{data}}}\big[\log
+      \color{#8b5cf6}{D}(\color{#10b981}{x})\big] +
+      \mathbb{E}_{\color{#ef4444}{z}\sim \color{#ef4444}{P_z}}\big[\log(1 -
+      \color{#8b5cf6}{D}(\color{#3b82f6}{G}(\color{#ef4444}{z})))\big] $$
+    </div>
+
+    <div class="deep-dive mb-8">
+
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Explication mathématique
+      </h4>
+
+      <p class="text-sm text-slate-600">
+        \(\mathcal{L}\) désigne la fonction objectif : un nombre réel que le
+        Discriminateur cherche à <strong>maximiser</strong> et que le
+        Générateur cherche à <strong>minimiser</strong>. Le premier terme,
+        \(\mathbb{E}_{x \sim P_{data}}[\log D(x)]\), pousse le Discriminateur à
+        assigner une probabilité proche de 1 aux vraies données : si
+        \(D(x)=1\), \(\log(1)=0\) (parfait) ; si \(D(x)=0\), \(\log(0) =
+        -\infty\) (catastrophique). Le second terme,
+        \(\mathbb{E}_{z\sim p_z}[\log(1-D(G(z)))]\), pousse le Discriminateur à
+        assigner une probabilité proche de 0 aux données synthétiques ; le
+        Générateur, lui, veut minimiser ce même terme, donc
+        <strong>maximiser \(D(G(z))\)</strong> — tromper le juge.
+      </p>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div>
+
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          L'optimum théorique de Nash
+        </h3>
+
+        <p class="text-slate-700 mb-4">
+          À l'équilibre, le Discriminateur optimal \(D^*\) vérifie :
+        </p>
+
+        <div class="math-box text-lg text-center bg-slate-50 text-slate-800 border-l-4 border-blue-500">
+           $$ \color{#8b5cf6}{D^*}(\color{#10b981}{x}) =
+          \frac{\color{#10b981}{P_{data}}(\color{#10b981}{x})}{\color{#10b981}{P_{data}}(\color{#10b981}{x})
+          + \color{#3b82f6}{P_g}(\color{#10b981}{x})} $$
+        </div>
+
+        <ul class="space-y-3 text-slate-700 text-sm mt-4">
+          <li>
+            <strong>\(D^*(x) = P_{data} / (P_{data}+P_g)\)</strong> : le
+            Discriminateur optimal compare deux densités de probabilité — celle
+            des données réelles et celle des données générées.
+          </li>
+          <li>
+            <strong>Si \(P_g = P_{data}\)</strong> (le Générateur a
+            parfaitement appris la distribution réelle), alors
+            <strong>\(D^*(x) = 1/2\) pour tout \(x\)</strong> : le
+            Discriminateur est dans le flou total, il a une chance sur deux de
+            se tromper — il joue à pile ou face.
+          </li>
+        </ul>
+
+      </div>
+
+      <div class="space-y-6">
+
+        <div
+          class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm"
+        >
+
+          <h4
+            class="font-bold text-emerald-900 mb-3 text-lg uppercase tracking-wide text-xs"
+          >
+            Ce que dit vraiment cette équation
+          </h4>
+
+          <div class="text-sm space-y-2 text-emerald-800">
+            <p>
+              Ce n'est pas un vœu pieux : c'est une propriété démontrable de
+              l'objectif minimax. Mais elle décrit un point d'équilibre
+              <em>théorique</em>, atteint seulement si le Discriminateur est
+              entraîné jusqu'à l'optimalité à chaque étape et si le Générateur
+              dispose d'une capacité infinie. En pratique, avec des réseaux de
+              taille finie et un nombre fini d'itérations, cet équilibre n'est
+              qu'une cible que l'on approche — et parfois manque radicalement,
+              comme le montre la section suivante.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-2xl">
+
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+            >Analogie</span
+          >
+          <h4 class="font-bold text-slate-800 text-lg">Le faux-monnayeur</h4>
+
+          <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+            Le Générateur est un faux-monnayeur, le Discriminateur un
+            policier expert. Au début, les faux billets (courbes) sont
+            grossiers et le policier les repère instantanément. À force
+            d'échouer, le faux-monnayeur s'améliore. À l'équilibre parfait, ses
+            faux billets sont si bons que le policier ne fait plus que deviner
+            au hasard.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Equation 2 : Loss = 2 JSD - log4 -->
+  <section
+    class="bg-slate-800 p-10 rounded-3xl shadow-xl border border-slate-700 relative text-white"
+  >
+
+    <div
+      class="absolute -left-4 top-10 bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-slate-800"
+    >
+      2
+    </div>
+
+    <div class="mb-6">
+
+      <h2 class="text-3xl font-black text-white">
+        La perte optimale n'est autre que la divergence de Jensen-Shannon
+      </h2>
+
+      <p class="text-slate-300 mt-2 text-lg">
+        En substituant \(D^*\) dans la loss, le voile se lève sur ce que le GAN
+        minimise réellement.
+      </p>
+
+    </div>
+
+    <div
+      class="bg-slate-900 rounded-xl p-6 text-lg md:text-2xl text-center border border-slate-700 my-8 shadow-inner"
+    >
+       $$ \mathcal{L}(\color{#3b82f6}{G}, \color{#8b5cf6}{D^*}) = 2 \cdot
+      \text{JSD}(\color{#10b981}{P_{data}} \| \color{#3b82f6}{P_g}) - \log 4 $$
+    </div>
+
+    <div
+      class="deep-dive mb-8 bg-slate-700 border-l-4 border-red-400 text-slate-200"
+    >
+
+      <h4 class="font-bold text-white mb-2 uppercase tracking-wide text-xs">
+        Analyse détaillée : la « perte » est une distance
+      </h4>
+
+      <p class="text-sm">
+        La perte (l'erreur) du GAN, une fois le Discriminateur optimal
+        substitué, est égale à deux fois la
+        <strong>Divergence de Jensen-Shannon (JSD)</strong> entre la
+        distribution réelle et la distribution générée, moins une constante
+        \(\log 4\). Si le Générateur est parfait (\(P_g = P_{data}\), donc
+        JSD = 0), la perte vaut \(-\log 4\), son minimum théorique. Cette
+        équivalence signifie qu'entraîner un GAN classique revient
+        implicitement à <strong>minimiser une divergence de Jensen-Shannon</strong>
+        — un choix qui, comme le montre la section suivante, s'avère
+        problématique dès que les distributions ne se chevauchent pas.
+      </p>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div>
+
+        <h3
+          class="font-bold text-xl border-b-2 border-slate-600 pb-3 mb-5 text-slate-100"
+        >
+          Qu'est-ce que la divergence de Jensen-Shannon ?
+        </h3>
+
+        <p class="text-sm text-slate-300 mb-4">
+          La JSD se construit à partir d'une autre mesure, la
+          <strong>divergence de Kullback-Leibler (KL)</strong>, qui mesure à
+          quel point une distribution s'éloigne d'une autre :
+        </p>
+
+        <div class="bg-slate-900 rounded-lg p-4 text-center text-base border border-slate-700 mb-4">
+           $$ \text{JSD}(p\|q) = \tfrac{1}{2}\text{KL}\Big(p \,\Big\|\,
+          \tfrac{p+q}{2}\Big) + \tfrac{1}{2}\text{KL}\Big(q \,\Big\|\,
+          \tfrac{p+q}{2}\Big) $$
+        </div>
+
+        <p class="text-sm text-slate-300">
+          Pour savoir si \(p\) et \(q\) se ressemblent, on calcule la distance
+          entre \(p\) et leur milieu \(m=(p+q)/2\), puis la distance entre
+          \(q\) et ce même milieu, et on fait la moyenne des deux.
+        </p>
+
+      </div>
+
+      <div
+        class="bg-violet-900 border border-violet-700 p-6 rounded-2xl shadow-sm"
+      >
+
+        <span
+          class="uppercase tracking-widest text-xs font-bold text-violet-400 mb-1 block"
+          >Avantages par rapport à la KL</span
+        >
+
+        <ul class="space-y-3 text-sm text-violet-200 mt-2">
+          <li>
+            <strong>Symétrie :</strong> \(\text{JSD}(p\|q) =
+            \text{JSD}(q\|p)\). La distance est la même dans les deux sens —
+            ce que la KL, asymétrique, ne garantit pas.
+          </li>
+          <li>
+            <strong>Bornée :</strong> contrairement à la KL qui peut diverger
+            vers l'infini, la JSD reste toujours comprise entre
+            <strong>0</strong> (distributions identiques) et
+            <strong>\(\log 2\)</strong> (distributions disjointes, sans aucun
+            recouvrement).
+          </li>
+        </ul>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Problème central : vanishing gradient -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 border-t-8 border-t-red-500"
+  >
+
+    <div class="mb-8">
+
+      <span
+        class="uppercase tracking-widest text-xs font-black text-red-500 mb-2 block"
+        >Le problème central</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        Quand la JSD sature : le Vanishing Gradient
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        C'est ce défaut, observé dès les premières itérations d'entraînement,
+        qui a motivé le remplacement de la JSD par la distance de Wasserstein.
+      </p>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+
+      <div class="space-y-4 text-slate-700">
+
+        <p>
+          <strong>\(P_{data}\) (la réalité) :</strong> des courbes de
+          consommation avec des pics nets le matin et le soir, et un creux
+          l'après-midi.
+        </p>
+
+        <p>
+          <strong>\(P_g\) (le Générateur débutant) :</strong> en tout début
+          d'entraînement, ses poids sont aléatoires ; il produit du bruit
+          blanc, des zigzags qui montent et descendent n'importe comment.
+        </p>
+
+        <p>
+          Ces deux distributions sont donc, au départ,
+          <strong>totalement disjointes</strong> : le bruit du Générateur vit
+          « ailleurs » que les vraies courbes RTE. Le Discriminateur apprend
+          alors très vite (en quelques itérations) à répondre « Faux » avec
+          une certitude de 99,9&nbsp;%. La courbe de perte du Discriminateur
+          devient une ligne parfaitement horizontale — un plateau.
+        </p>
+
+      </div>
+
+      <div class="bg-red-50 border border-red-200 p-6 rounded-2xl shadow-sm">
+
+        <h4 class="font-bold text-red-900 mb-3 uppercase tracking-wide text-xs">
+          La mécanique du blocage
+        </h4>
+
+        <ul class="space-y-3 text-sm text-red-800">
+          <li>
+            Le Générateur utilise la dérivée (la pente) de la courbe de perte
+            pour savoir comment ajuster ses poids :
+            \(w \leftarrow w - \eta \cdot \nabla_w \mathcal{L}\).
+          </li>
+          <li>
+            Si la pente est plate, le gradient est proche de 0. Les poids ne
+            changent quasiment plus : c'est le
+            <strong>Vanishing Gradient</strong>.
+          </li>
+          <li>
+            À ce moment précis, la divergence JS atteint sa
+            <strong>valeur maximale, \(\log 2\)</strong>. Même si le
+            Générateur modifie légèrement ses poids pour s'améliorer, tant que
+            les supports des deux distributions ne se recouvrent pas, la JSD
+            reste bloquée à \(\log 2\) : le gradient reste nul.
+          </li>
+        </ul>
+
+      </div>
+
+    </div>
+
+    <div
+      class="bg-indigo-50 border-l-4 border-indigo-500 p-6 rounded-r-2xl"
+    >
+
+      <span
+        class="uppercase tracking-widest text-xs font-bold text-indigo-500 mb-1 block"
+        >Analogie</span
+      >
+      <h4 class="font-bold text-indigo-900 text-lg mb-2">
+        La pièce totalement noire
+      </h4>
+
+      <p class="text-indigo-800 text-sm leading-relaxed">
+        C'est comme si le Générateur était plongé dans le noir complet et
+        demandait « est-ce que je brûle ou je gèle ? », et que le
+        Discriminateur répondait simplement « tu n'es pas au bon endroit »,
+        sans jamais dire si le dernier pas était meilleur ou pire que le
+        précédent. Aucune indication de direction, aucun signal de progrès :
+        juste un mur.
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- Equation 3 : Wasserstein Distance -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative border-t-8 border-t-emerald-500"
+  >
+
+    <div
+      class="absolute -left-4 top-10 bg-emerald-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      3
+    </div>
+
+    <div class="mb-6">
+
+      <span
+        class="uppercase tracking-widest text-xs font-black text-emerald-600 mb-2 block"
+        >WGAN — la solution</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        La distance de Wasserstein (Earth Mover's Distance)
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        Pour pallier ce problème,
+        <a class="ref-link" href="/reference-wgan/arjovsky-et-al-2017-wgan.pdf" target="_blank" rel="noopener noreferrer">Arjovsky, Chintala &amp; Bottou (<em>Wasserstein GAN</em>, ICML 2017)</a>
+        remplacent la JSD par la distance de Wasserstein, aussi appelée
+        « Earth Mover's Distance » (EMD).
+      </p>
+
+    </div>
+
+    <div class="math-box text-xl md:text-2xl text-center">
+       $$ W(\color{#10b981}{p},\color{#3b82f6}{q}) = \inf_{\gamma \in
+      \Pi(\color{#10b981}{p},\color{#3b82f6}{q})} \;
+      \mathbb{E}_{(x,y)\sim\gamma}\big[\|x-y\|\big] $$
+    </div>
+
+    <div class="deep-dive mb-8">
+
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Description des termes
+      </h4>
+
+      <ul class="text-sm text-slate-600 space-y-3">
+        <li>
+          <strong>\(\|x-y\|\) (le déplacement) :</strong> la distance
+          physique à parcourir. Si l'axe vertical est la puissance (kW) et
+          l'axe horizontal le temps, ce terme mesure la distance pour déplacer
+          « un paquet » d'énergie d'un point à un autre.
+        </li>
+        <li>
+          <strong>\(\gamma \in \Pi(p,q)\), le plan de transport :</strong> il
+          indique quelle quantité de masse générée déplacer vers quel point
+          réel.
+        </li>
+        <li>
+          <strong>\(\mathbb{E}_{(x,y)\sim\gamma}\) :</strong> le coût moyen
+          (l'effort total) pour déplacer tout le tas de masse selon le plan
+          \(\gamma\).
+        </li>
+        <li>
+          <strong>\(\inf\) (l'infimum) :</strong> on cherche le plan de
+          transport le plus efficace, celui qui demande le minimum d'effort.
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm">
+
+        <h4
+          class="font-bold text-emerald-900 mb-3 uppercase tracking-wide text-xs"
+        >
+          Exemple : un pic déplacé de 5 heures
+        </h4>
+
+        <p class="text-sm text-emerald-800 leading-relaxed">
+          Le Générateur crée un pic de consommation à 14h alors que le vrai
+          pic est à 19h. La distance de Wasserstein calcule l'effort pour
+          pousser ce pic de 5 heures vers la droite. Ce coût est
+          <strong>continu et mesurable</strong>, même lorsque les deux
+          courbes ne se chevauchent pas encore : le gradient n'est donc jamais
+          nul. Le Générateur reçoit toujours une instruction de direction.
+        </p>
+
+      </div>
+
+      <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-2xl">
+
+        <span
+          class="uppercase tracking-widest text-xs font-bold text-slate-500 mb-1 block"
+          >JSD vs Distance de Wasserstein</span
+        >
+
+        <p class="text-slate-700 text-sm mt-2 leading-relaxed">
+          La JSD est <strong>binaire</strong> : soit les courbes se touchent,
+          soit elles ne se touchent pas. Si elles ne se touchent pas, le
+          gradient est nul, quelle que soit la distance qui les sépare.
+          La distance de Wasserstein, elle, ajoute une notion de
+          <strong>distance mesurable</strong> même lorsque les supports sont
+          disjoints : elle « voit » que 14h est plus proche de 19h que 4h du
+          matin ne l'est.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Equation 4 : Kantorovich-Rubinstein + Lipschitz -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative">
+
+    <div
+      class="absolute -left-4 top-10 bg-emerald-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      4
+    </div>
+
+    <div class="mb-6">
+
+      <h2 class="text-3xl font-black text-slate-800">
+        La dualité de Kantorovich-Rubinstein
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        Calculer directement l'infimum \(\inf\) est computationnellement trop
+        gourmand : le WGAN utilise une astuce mathématique pour le contourner.
+      </p>
+
+    </div>
+
+    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-8 mb-10 shadow-sm">
+
+      <h3 class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-3">
+        Du problème de minimisation au problème de maximisation
+      </h3>
+
+      <p class="text-slate-700 mb-4">
+        La dualité de Kantorovich-Rubinstein transforme le problème de
+        minimisation (trouver le plan de transport le moins coûteux) en un
+        problème de <strong>maximisation</strong> (trouver une fonction qui
+        sépare le mieux les deux tas de masse) :
+      </p>
+
+      <div class="math-box text-xl md:text-2xl text-center">
+         $$ W(\color{#10b981}{p},\color{#3b82f6}{q}) =
+        \sup_{\|\color{#8b5cf6}{f}\|_L \le 1} \;
+        \mathbb{E}_{x\sim \color{#10b981}{p}}[\color{#8b5cf6}{f}(x)] -
+        \mathbb{E}_{x\sim \color{#3b82f6}{q}}[\color{#8b5cf6}{f}(x)] $$
+      </div>
+
+      <p class="text-slate-700 mt-6">
+        Dans le contexte du WGAN, la fonction \(f\) correspond au
+        <strong>Critique</strong> — le réseau qui remplace le Discriminateur
+        classique. Le Critique donne un score (une « hauteur ») à une donnée,
+        et non plus une probabilité entre 0 et 1.
+      </p>
+
+      <ul class="space-y-2 text-sm text-slate-700 mt-4">
+        <li>
+          <strong>\(\mathbb{E}_{x\sim p}[f(x)]\)</strong> : le score moyen
+          donné aux vraies données.
+        </li>
+        <li>
+          <strong>\(\mathbb{E}_{x\sim q}[f(x)]\)</strong> : le score moyen
+          donné aux fausses données.
+        </li>
+        <li>
+          <strong>\(\sup\)</strong> (le supremum) : entraîner le Critique
+          \(f\) pour que la différence entre le score des vraies et des
+          fausses données soit la plus grande possible.
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div>
+
+        <h3 class="font-bold text-xl border-b-2 border-slate-100 pb-3 mb-5">
+          La contrainte de Lipschitz
+        </h3>
+
+        <div class="math-box text-lg text-center bg-slate-900 text-slate-100 mb-4">
+           $$ |f(x) - f(y)| \le \|x-y\| \quad \forall x,y $$
+        </div>
+
+        <p class="text-slate-700 text-sm">
+          Sans contrainte, le Critique tricherait : il donnerait un score de
+          \(+\infty\) aux vraies données et \(-\infty\) aux fausses, les
+          gradients exploseraient. Il faut donc lui imposer une limite de
+          vitesse — la contrainte de <strong>1-Lipschitz</strong>
+          (\(\|f\|_L \le 1\)) : la pente du Critique ne peut jamais dépasser 1
+          (45°), qu'on peut se représenter comme l'axe horizontal étant
+          l'espace des données et l'axe vertical le score donné par \(f\).
+        </p>
+
+        <p class="text-slate-700 text-sm mt-4">
+          Le Discriminateur devient donc un Critique \(f_w\) : la loss du
+          WGAN devient
+        </p>
+
+        <div class="math-box text-lg text-center bg-slate-900 text-slate-100 mt-4">
+           $$ \min_{\color{#3b82f6}{G}} \max_{\|\color{#8b5cf6}{f_w}\|_L \le
+          1} \; \mathbb{E}_{\color{#10b981}{x} \sim P_{data}}[\color{#8b5cf6}{f_w}(\color{#10b981}{x})]
+          - \mathbb{E}_{\color{#ef4444}{z}\sim P_z}[\color{#8b5cf6}{f_w}(\color{#3b82f6}{G}(\color{#ef4444}{z}))] $$
+        </div>
+
+      </div>
+
+      <div class="space-y-6">
+
+        <div class="bg-violet-50 border border-violet-200 p-6 rounded-2xl shadow-sm">
+
+          <h4 class="font-bold text-violet-900 mb-3 uppercase tracking-wide text-xs">
+            Un évaluateur, pas un détective
+          </h4>
+
+          <p class="text-sm text-violet-800 leading-relaxed">
+            Le Discriminateur n'est plus un détective binaire qui dit « vrai »
+            ou « faux ». C'est un évaluateur qui donne une note (un réel,
+            positif ou négatif) à chaque courbe de consommation, sous la
+            contrainte que sa notation ne varie jamais trop vite d'une courbe
+            à l'autre.
+          </p>
+
+        </div>
+
+        <div class="bg-red-50 border-l-4 border-red-400 p-5 rounded-r-2xl">
+
+          <span
+            class="uppercase tracking-widest text-xs font-bold text-red-500 mb-1 block"
+            >Le WGAN classique : weight clipping</span
+          >
+
+          <p class="text-red-800 text-sm mt-2 leading-relaxed">
+            Dans le WGAN d'origine, la contrainte de Lipschitz est imposée
+            « à la main » par écrêtage des poids :
+            \(w \leftarrow \text{clip}(w, -c, c)\) après chaque mise à jour
+            (en général \(c = 0.01\)). Cette approche est
+            <strong>brutale</strong> : elle force le Critique à n'utiliser que
+            des fonctions quasi-linéaires pour rester dans l'intervalle
+            compact, réduisant artificiellement sa capacité d'expression.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Equation 5 : Gradient Penalty -->
+  <section
+    class="bg-slate-800 p-10 rounded-3xl shadow-xl border border-slate-700 relative text-white"
+  >
+
+    <div
+      class="absolute -left-4 top-10 bg-violet-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-slate-800"
+    >
+      5
+    </div>
+
+    <div class="mb-6">
+
+      <span
+        class="uppercase tracking-widest text-xs font-black text-violet-300 mb-2 block"
+        >WGAN-GP</span
+      >
+      <h2 class="text-3xl font-black text-white">
+        La pénalité de gradient
+      </h2>
+
+      <p class="text-slate-300 mt-2 text-lg">
+        <a class="ref-link" href="/reference-wgan/gulrajani-et-al-2017-wgan-gp.pdf" target="_blank" rel="noopener noreferrer">Gulrajani et al. (<em>Improved Training of Wasserstein GANs</em>, NeurIPS 2017)</a>
+        remplacent l'écrêtage des poids par une régularisation plus douce.
+      </p>
+
+    </div>
+
+    <div
+      class="bg-slate-900 rounded-xl p-6 text-base md:text-xl text-center border border-slate-700 my-8 shadow-inner overflow-x-auto"
+    >
+       $$ \mathcal{L}_{WGAN\text{-}GP} = \underbrace{\mathbb{E}_{\color{#10b981}{x}\sim
+      P_{data}}[\color{#8b5cf6}{f_w}(\color{#10b981}{x})] -
+      \mathbb{E}_{\color{#3b82f6}{\tilde{x}}\sim
+      P_g}[\color{#8b5cf6}{f_w}(\color{#3b82f6}{\tilde{x}})]}_{\text{terme
+      Wasserstein}} + \underbrace{\lambda\,
+      \mathbb{E}_{\hat{x}\sim P_{\hat{x}}}\Big[\big(\|\nabla_{\hat{x}}
+      \color{#8b5cf6}{f_w}(\hat{x})\|_2 - 1\big)^2\Big]}_{\text{pénalité de
+      gradient}} $$
+    </div>
+
+    <div
+      class="deep-dive mb-8 bg-slate-700 border-l-4 border-violet-400 text-slate-200"
+    >
+
+      <h4 class="font-bold text-white mb-2 uppercase tracking-wide text-xs">
+        Analyse détaillée : pénaliser plutôt que contraindre
+      </h4>
+
+      <p class="text-sm">
+        Une fonction est 1-Lipschitz si et seulement si la norme de son
+        gradient est inférieure ou égale à 1 <em>partout</em>. Plutôt que de
+        contraindre les poids eux-mêmes (weight clipping), l'idée est de
+        <strong>pénaliser les points où le gradient dépasse 1</strong>. Le
+        terme \((\|\nabla_{\hat{x}} f_w(\hat{x})\|_2 - 1)^2\) vaut 0 quand la
+        norme du gradient vaut exactement 1, et croît quadratiquement dès
+        qu'elle s'en écarte, dans un sens comme dans l'autre. Le point
+        \(\hat{x}\) est un point interpolé aléatoirement entre une vraie
+        donnée et une donnée générée
+        (\(\hat{x} = \epsilon\, x + (1-\epsilon)\,\tilde{x}\),
+        \(\epsilon \sim \mathcal{U}(0,1)\)) : c'est le long de ces segments
+        que la contrainte de Lipschitz est la plus susceptible d'être violée.
+      </p>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div class="bg-violet-900 border border-violet-700 p-6 rounded-2xl shadow-sm">
+
+        <h4 class="font-bold text-violet-200 mb-3 uppercase tracking-wide text-xs">
+          Le coefficient \(\lambda\)
+        </h4>
+
+        <p class="text-sm text-violet-300 leading-relaxed">
+          Dans le papier de Gulrajani et al., \(\lambda = 10\) est utilisé sur
+          l'ensemble des expériences. Ce n'est pas arbitraire :
+        </p>
+
+        <ul class="text-sm text-violet-300 space-y-2 mt-3">
+          <li>
+            <strong>Trop petit :</strong> la contrainte Lipschitz n'est pas
+            imposée, le Critique explose, les gradients deviennent instables.
+          </li>
+          <li>
+            <strong>Trop grand :</strong> la pénalité domine, le Critique
+            devient trop contraint (quasi-linéaire), incapable de discriminer
+            finement les distributions ; la loss Wasserstein n'est plus
+            estimée correctement.
+          </li>
+        </ul>
+
+        <p class="text-sm text-violet-300 mt-3">
+          \(\lambda = 10\) est un équilibre empiriquement robuste, mais pour
+          des profils de consommation électrique (distributions
+          multimodales, saisonnières), une recherche d'hyperparamètres sur
+          \(\lambda \in \{1, 5, 10, 50\}\) reste pertinente.
+        </p>
+
+      </div>
+
+      <div class="bg-emerald-900/40 border border-emerald-700 p-6 rounded-2xl shadow-sm">
+
+        <h4 class="font-bold text-emerald-200 mb-3 uppercase tracking-wide text-xs">
+          Un indicateur de débogage inédit
+        </h4>
+
+        <p class="text-sm text-emerald-100 leading-relaxed">
+          Dans le GAN classique, il est impossible de savoir si l'entraînement
+          se passe bien en regardant la seule courbe de perte : la loss du
+          Discriminateur peut rester stable alors même que le Générateur
+          s'effondre en <strong>mode collapse</strong>. Dans le WGAN-GP, la
+          loss du Critique est une estimation directe de la distance de
+          Wasserstein entre \(P_{data}\) et \(P_g\) : elle
+          <strong>diminue de façon monotone</strong> à mesure que le
+          Générateur s'améliore. On peut donc la surveiller comme un véritable
+          indicateur de qualité — très utile pour savoir quand arrêter
+          l'entraînement.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Pourquoi le passage du GAN au WGAN-GP -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 border-t-8 border-t-violet-500"
+  >
+
+    <div class="mb-8">
+
+      <span
+        class="uppercase tracking-widest text-xs font-black text-violet-500 mb-2 block"
+        >Bilan</span
+      >
+      <h2 class="text-3xl font-black text-slate-800">
+        Pourquoi le WGAN-GP a détrôné le GAN classique
+      </h2>
+
+    </div>
+
+    <div class="space-y-5 text-slate-700 mb-10">
+
+      <p>
+        <strong>1. Un gradient qui ne s'annule jamais.</strong> C'est
+        l'argument décisif : la distance de Wasserstein reste mesurable et
+        différentiable même quand \(P_{data}\) et \(P_g\) ne se chevauchent
+        pas, contrairement à la JSD qui sature à \(\log 2\) et bloque le
+        Générateur. Pour la génération de séries électriques, cet enjeu est
+        très concret : les
+        <a class="ref-link" href="/reference-wgan/chen-et-al-2018-renewable-gan.pdf" target="_blank" rel="noopener noreferrer">GAN de scénarios renouvelables (Chen et al., 2018)</a>
+        produisaient déjà des courbes synthétiques de production éolienne ou
+        solaire réalistes, mais avec les mêmes risques d'instabilité que tout
+        GAN classique fondé sur la JSD.
+      </p>
+
+      <p>
+        <strong>2. Une loss enfin interprétable.</strong> La loss du Critique
+        estime directement la distance de Wasserstein, et décroît
+        monotonement à mesure que le Générateur progresse — un signal de
+        débogage qui n'existe tout simplement pas dans le GAN classique.
+      </p>
+
+      <p>
+        <strong>3. Le mode collapse rendu moins probable.</strong> Un des
+        échecs classiques des GAN est le
+        <strong>mode collapse</strong> : le Générateur découvre une poignée de
+        courbes qui trompent systématiquement le Discriminateur et cesse
+        d'explorer le reste de la distribution.
+        <a class="ref-link" href="/reference-wgan/salimans-et-al-2016-improved-gan.pdf" target="_blank" rel="noopener noreferrer">Salimans et al. (<em>Improved Techniques for Training GANs</em>, NeurIPS 2016)</a>
+        documentent ce phénomène et proposent des correctifs (feature
+        matching, minibatch discrimination) pour le GAN classique ; le
+        gradient plus riche et plus stable du WGAN-GP réduit structurellement
+        ce risque en évitant les zones de gradient nul qui précipitent
+        l'effondrement.
+      </p>
+
+      <p>
+        <strong>4. Une régularisation qui ne sacrifie pas la capacité du
+        réseau.</strong> Le weight clipping du WGAN original imposait une
+        contrainte de Lipschitz au prix d'un Critique quasi-linéaire. La
+        pénalité de gradient impose la même contrainte
+        <em>localement</em>, sans jamais restreindre la forme des poids : le
+        Critique conserve toute son expressivité pour distinguer des
+        distributions multimodales et saisonnières comme les courbes RTE.
+      </p>
+
+      <p>
+        <strong>5. Un entraînement plus stable, au prix d'un Critique plus
+        sollicité.</strong> Contrairement au GAN classique, on renforce
+        massivement le Critique afin qu'il aiguille de manière optimale le
+        Générateur tout au long de l'apprentissage (voir la section
+        \(N_{critic}\) ci-dessous) : la mesure de distance qu'il fournit doit
+        rester fiable à chaque étape.
+      </p>
+
+    </div>
+
+    <h3 class="text-2xl font-bold text-slate-700 mb-4">
+      Face à face : GAN classique vs WGAN-GP
+    </h3>
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full text-sm text-left border-collapse">
+
+        <thead>
+          <tr class="bg-slate-800 text-white">
+            <th class="p-4 font-bold rounded-tl-xl">Critère</th>
+            <th class="p-4 font-bold">GAN classique</th>
+            <th class="p-4 font-bold rounded-tr-xl">WGAN-GP</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          <tr class="bg-white">
+            <td class="p-4 font-semibold text-slate-700">Sortie du Discriminateur</td>
+            <td class="p-4 text-slate-600">Probabilité \([0,1]\) (sigmoïde)</td>
+            <td class="p-4 text-slate-600">Score réel non borné (le Critique)</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="p-4 font-semibold text-slate-700">Distance minimisée</td>
+            <td class="p-4 text-slate-600">Divergence de Jensen-Shannon</td>
+            <td class="p-4 text-slate-600">Distance de Wasserstein (EMD)</td>
+          </tr>
+          <tr class="bg-white">
+            <td class="p-4 font-semibold text-slate-700">Gradient quand les supports sont disjoints</td>
+            <td class="p-4 text-slate-600">Nul (plateau, JSD = log 2)</td>
+            <td class="p-4 text-slate-600">Non nul, proportionnel à la distance</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="p-4 font-semibold text-slate-700">Contrainte de Lipschitz</td>
+            <td class="p-4 text-slate-600">Aucune</td>
+            <td class="p-4 text-slate-600">Pénalité de gradient (\(\lambda=10\))</td>
+          </tr>
+          <tr class="bg-white">
+            <td class="p-4 font-semibold text-slate-700">Interprétabilité de la loss</td>
+            <td class="p-4 text-slate-600">Faible (peut être stable en mode collapse)</td>
+            <td class="p-4 text-slate-600">Élevée (proxy monotone de la qualité)</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="p-4 font-semibold text-slate-700">Ratio critique/générateur</td>
+            <td class="p-4 text-slate-600">1:1</td>
+            <td class="p-4 text-slate-600">\(N_{critic} = 5\) (souvent 10)</td>
+          </tr>
+          <tr class="bg-white">
+            <td class="p-4 font-semibold text-slate-700">Adam \((\beta_1, \beta_2)\)</td>
+            <td class="p-4 text-slate-600">\((0.5,\ 0.999)\)</td>
+            <td class="p-4 text-slate-600">\((0.0,\ 0.9)\)</td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="p-4 font-semibold text-slate-700">Risque principal</td>
+            <td class="p-4 text-slate-600">Vanishing gradient, mode collapse</td>
+            <td class="p-4 text-slate-600">Coût de calcul (double backprop du gradient)</td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+  <!-- Ncritic -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+
+    <h2 class="text-3xl font-black text-slate-800 mb-4">
+      Le renfort du Critique : \(N_{critic}\)
+    </h2>
+
+    <p class="text-slate-600 mb-6">
+      Contrairement au GAN classique où Générateur et Discriminateur
+      alternent à parts égales, le WGAN-GP entraîne le Critique
+      <strong>\(N_{critic}\) fois</strong> pour chaque mise à jour du
+      Générateur. L'usage standard préconise \(N_{critic} = 5\) : le Critique
+      est mis à jour cinq fois pour chaque itération du Générateur.
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-8">
+
+      <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          Convergence de la mesure
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          La distance de Wasserstein est mieux estimée : le Critique a le
+          temps de « coller » au plus près de la distribution réelle des
+          courbes RTE, fournissant un score de réalisme fiable plutôt qu'une
+          simple classification vrai/faux.
+        </p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          Stabilité des gradients
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Le Générateur évite les « sauts dans le vide » : il progresse sur
+          une rampe de gradient consolidée par plusieurs étapes de calcul, ce
+          qui prévient les oscillations brutales et le mode collapse.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm mt-8">
+      <p class="text-sm text-emerald-800 leading-relaxed">
+        Bien que la valeur 5 soit le compromis historique lié aux contraintes
+        de puissance de calcul de 2017, ce paramètre peut être poussé plus
+        loin : par exemple, augmenter \(N_{critic}\) à
+        <strong>10</strong> renforce encore la fiabilité du signal envoyé au
+        Générateur, au prix d'un temps d'entraînement plus long (chaque
+        itération du Générateur coûte alors 10 passes du Critique au lieu de
+        5).
+      </p>
+    </div>
+
+  </section>
+
+  <!-- Equation 6 : Adam -->
+  <section
+    class="bg-white p-10 rounded-3xl shadow-md border border-slate-200 relative"
+  >
+
+    <div
+      class="absolute -left-4 top-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black shadow-xl text-lg border-4 border-white"
+    >
+      6
+    </div>
+
+    <div class="mb-6">
+
+      <h2 class="text-3xl font-black text-slate-800">
+        L'optimiseur Adam et ses deux mémoires
+      </h2>
+
+      <p class="text-slate-500 mt-2 text-lg">
+        <a class="ref-link" href="/reference-wgan/kingma-ba-2014-adam.pdf" target="_blank" rel="noopener noreferrer">Kingma &amp; Ba (<em>Adam: A Method for Stochastic Optimization</em>, 2014)</a>
+        décident de la vitesse et de l'amplitude de chaque mise à jour de poids.
+      </p>
+
+    </div>
+
+    <p class="text-slate-700 mb-6">
+      La fonction de perte définit la destination, le gradient indique la
+      direction, Adam décide du pas. À chaque itération \(t\), l'algorithme
+      calcule une moyenne mobile exponentielle des gradients passés :
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+      <div class="math-box text-lg text-center">
+         $$ \color{#3b82f6}{m_t} = \beta_1 \color{#3b82f6}{m_{t-1}} + (1-\beta_1)
+        \color{#ef4444}{g_t} $$
+        <p class="text-xs mt-3 text-slate-300">Momentum (vitesse) : conserve l'inertie des directions précédentes.</p>
+      </div>
+
+      <div class="math-box text-lg text-center">
+         $$ \color{#8b5cf6}{v_t} = \beta_2 \color{#8b5cf6}{v_{t-1}} + (1-\beta_2)
+        \color{#ef4444}{g_t^2} $$
+        <p class="text-xs mt-3 text-slate-300">Variance (friction) : repère si la pente est abrupte ou douce.</p>
+      </div>
+
+    </div>
+
+    <div class="math-box text-lg text-center mb-10">
+       $$ \theta_{t+1} = \theta_t - \alpha \frac{\hat{m}_t}{\sqrt{\hat{v}_t} +
+      \epsilon} $$
+    </div>
+
+    <div class="deep-dive mb-10">
+      <h4 class="font-bold text-slate-700 mb-2 uppercase tracking-wide text-xs">
+        Pourquoi \(\beta_1\) et \(\beta_2\) changent radicalement
+      </h4>
+      <p class="text-sm text-slate-600">
+        Le passage d'un GAN classique à un WGAN-GP (avec \(N_{critic}=10\))
+        exige une modification radicale des paramètres \(\beta_1\) et
+        \(\beta_2\) de l'optimiseur Adam, comme le montre le tableau
+        ci-dessous.
+      </p>
+    </div>
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full text-sm text-left border-collapse">
+
+        <thead>
+          <tr class="bg-slate-800 text-white">
+            <th class="p-4 font-bold rounded-tl-xl">Paramètre</th>
+            <th class="p-4 font-bold">GAN classique</th>
+            <th class="p-4 font-bold">WGAN-GP</th>
+            <th class="p-4 font-bold rounded-tr-xl">Impact mathématique</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          <tr class="bg-white">
+            <td class="p-4 font-semibold text-slate-700">\(\beta_1\) (Momentum)</td>
+            <td class="p-4 text-slate-600">0.5</td>
+            <td class="p-4 text-slate-600 font-bold text-emerald-700">0.0</td>
+            <td class="p-4 text-slate-600">
+              En posant \(\beta_1=0\), la formule devient \(m_t = g_t\) : on
+              annule l'inertie. Le Critique doit s'adapter instantanément lors
+              de ses \(N_{critic}\) itérations sans être biaisé par les
+              anciens gradients.
+            </td>
+          </tr>
+          <tr class="bg-slate-50">
+            <td class="p-4 font-semibold text-slate-700">\(\beta_2\) (Variance)</td>
+            <td class="p-4 text-slate-600">0.999</td>
+            <td class="p-4 text-slate-600 font-bold text-emerald-700">0.9</td>
+            <td class="p-4 text-slate-600">
+              En abaissant \(\beta_2\), on réduit la « mémoire longue » de la
+              variance. Le pas d'apprentissage s'adapte beaucoup plus vite aux
+              nouvelles courbures du signal, crucial pour maintenir la
+              contrainte de Lipschitz à chaque itération.
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+  <!-- Pour aller plus loin -->
+  <section class="bg-white p-10 rounded-3xl shadow-md border border-slate-200">
+
+    <h2 class="text-3xl font-black text-slate-800 mb-4">
+      Pour aller plus loin : les autres pathologies de l'entraînement adversarial
+    </h2>
+
+    <p class="text-slate-600 mb-6">
+      Le vanishing gradient n'est pas la seule pathologie qui a motivé la
+      recherche autour des GAN. Deux autres phénomènes, documentés dans la
+      littérature, restent pertinents pour la génération de courbes RTE.
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference-wgan/salimans-et-al-2016-improved-gan.pdf" target="_blank" rel="noopener noreferrer">Improved Techniques (Salimans et al., 2016)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Introduit le <strong>feature matching</strong> (faire correspondre
+          des statistiques internes du Discriminateur plutôt que sa seule
+          sortie finale) et la <strong>minibatch discrimination</strong>, deux
+          correctifs pour le mode collapse dans le cadre du GAN classique —
+          un problème que le WGAN-GP atténue structurellement grâce à son
+          gradient non nul.
+        </p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h4 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wide">
+          <a class="ref-link" href="/reference-wgan/chen-et-al-2018-renewable-gan.pdf" target="_blank" rel="noopener noreferrer">Scénarios renouvelables (Chen et al., 2018)</a>
+        </h4>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Applique un GAN à la génération de scénarios de production éolienne
+          et solaire, validant l'intérêt du paradigme adversarial pour les
+          séries temporelles électriques — le terrain d'application direct de
+          ce cours.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+</main>

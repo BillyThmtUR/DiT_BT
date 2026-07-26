@@ -1,0 +1,170 @@
+[
+  {
+    "id": "gan",
+    "title": "Generative Adversarial Networks",
+    "authors": "Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, Yoshua Bengio",
+    "year": 2014,
+    "venue": "NeurIPS 2014",
+    "arxiv_id": "1406.2661",
+    "pdf_url": "https://arxiv.org/pdf/1406.2661",
+    "filename": "goodfellow-et-al-2014-gan.pdf",
+    "course_mention": "Section « Vue d'ensemble » (Le duel entre le Générateur et le Discriminateur) : article fondateur du paradigme adversarial. Egalement référencé à l'Équation 1 (objectif minimax) et pour l'optimum théorique de Nash (D* = 1/2).",
+    "highlights": [
+      {
+        "course_section": "Vue d'ensemble - Le duel entre le Generateur et le Discriminateur",
+        "search_text": [
+          "adversarial process",
+          "generative model G that captures the data distribution",
+          "minimax two-player game"
+        ],
+        "course_excerpt": "COURS - Vue d'ensemble : Goodfellow et al. (2014) introduisent le paradigme adversarial : un Generateur G qui transforme du bruit z en donnee artificielle x, et un Discriminateur D qui distingue le vrai du faux. Les deux reseaux s'entrainent simultanement dans un jeu a somme nulle, formalise par l'Equation 1 de ce cours."
+      },
+      {
+        "course_section": "Equation 1 - L'objectif minimax du GAN classique",
+        "search_text": [
+          "minimax game",
+          "log D(x)",
+          "log(1 - D(G(z)))"
+        ],
+        "course_excerpt": "COURS - Equation 1 (objectif minimax) : min_G max_D L = E_x~Pdata[log D(x)] + E_z~Pz[log(1-D(G(z)))]. Cette formulation exacte, avec ses deux termes (assigner une probabilite proche de 1 aux vraies donnees, proche de 0 aux donnees synthetiques), provient directement de l'article fondateur de Goodfellow et al. (2014)."
+      },
+      {
+        "course_section": "Equation 1 - L'optimum theorique de Nash",
+        "search_text": [
+          "unique solution",
+          "G recovering the training data distribution",
+          "D equal to"
+        ],
+        "course_excerpt": "COURS - L'optimum theorique de Nash : a l'equilibre, D*(x) = Pdata(x) / (Pdata(x) + Pg(x)) = 1/2 pour tout x, ce qui signifie que le Generateur a parfaitement appris la distribution reelle. Goodfellow et al. (2014) demontrent l'existence et l'unicite de cet equilibre theorique dans l'espace des fonctions arbitraires G et D."
+      }
+    ]
+  },
+  {
+    "id": "wgan",
+    "title": "Wasserstein GAN",
+    "authors": "Martin Arjovsky, Soumith Chintala, Léon Bottou",
+    "year": 2017,
+    "venue": "ICML 2017",
+    "arxiv_id": "1701.07875",
+    "pdf_url": "https://arxiv.org/pdf/1701.07875",
+    "filename": "arjovsky-et-al-2017-wgan.pdf",
+    "course_mention": "Section « La distance de Wasserstein (Earth Mover's Distance) » (Équation 3) et section « La dualité de Kantorovich-Rubinstein » (Équation 4) : article qui remplace la JSD par la distance de Wasserstein et introduit le weight clipping.",
+    "highlights": [
+      {
+        "course_section": "Equation 3 - La distance de Wasserstein (Earth Mover's Distance)",
+        "search_text": [
+          "Earth-Mover (EM) distance",
+          "Wasserstein-1",
+          "optimal transport"
+        ],
+        "course_excerpt": "COURS - Equation 3 (distance de Wasserstein) : W(p,q) = inf_{gamma in Pi(p,q)} E_(x,y)~gamma[||x-y||]. Arjovsky, Chintala et Bottou (Wasserstein GAN, ICML 2017) remplacent la divergence de Jensen-Shannon par cette distance de transport optimal (Earth Mover's Distance), qui reste mesurable meme quand les distributions ne se chevauchent pas."
+      },
+      {
+        "course_section": "Equation 4 - La dualite de Kantorovich-Rubinstein et le weight clipping",
+        "search_text": [
+          "Lipschitz",
+          "weight clipping",
+          "clipping the weights"
+        ],
+        "course_excerpt": "COURS - Le WGAN classique : weight clipping. Dans le WGAN d'origine (Arjovsky et al. 2017), la contrainte de Lipschitz est imposee par ecretage des poids w <- clip(w, -c, c) apres chaque mise a jour (c=0.01), une approche brutale qui force le Critique vers des fonctions quasi-lineaires."
+      }
+    ]
+  },
+  {
+    "id": "wgan-gp",
+    "title": "Improved Training of Wasserstein GANs",
+    "authors": "Ishaan Gulrajani, Faruk Ahmed, Martin Arjovsky, Vincent Dumoulin, Aaron Courville",
+    "year": 2017,
+    "venue": "NeurIPS 2017",
+    "arxiv_id": "1704.00028",
+    "pdf_url": "https://arxiv.org/pdf/1704.00028",
+    "filename": "gulrajani-et-al-2017-wgan-gp.pdf",
+    "course_mention": "Section « La pénalité de gradient » (Équation 5) : article qui remplace le weight clipping par la pénalité de gradient (WGAN-GP), avec λ=10 et le ratio N_critic.",
+    "highlights": [
+      {
+        "course_section": "Equation 5 - La penalite de gradient (WGAN-GP)",
+        "search_text": [
+          "gradient penalty",
+          "terrible way to enforce a Lipschitz constraint",
+          "penalize the norm of the gradient"
+        ],
+        "course_excerpt": "COURS - Equation 5 (penalite de gradient) : L = E_x~Pdata[fw(x)] - E_x~Pg[fw(x)] + lambda * E[(||grad fw(xchapo)||_2 - 1)^2]. Gulrajani et al. (Improved Training of Wasserstein GANs, NeurIPS 2017) montrent que le weight clipping est une tres mauvaise facon d'imposer la contrainte de Lipschitz, et proposent a la place de penaliser la norme du gradient du Critique autour de 1, avec lambda=10."
+      },
+      {
+        "course_section": "Le renfort du Critique - N_critic",
+        "search_text": [
+          "critic iterations",
+          "n_critic",
+          "five"
+        ],
+        "course_excerpt": "COURS - Le renfort du Critique (N_critic) : le Critique est mis a jour N_critic fois (5 dans l'usage standard, jusqu'a 10 dans les entrainements les plus pousses) pour chaque iteration du Generateur, afin de fournir une estimation fiable de la distance de Wasserstein a chaque etape."
+      }
+    ]
+  },
+  {
+    "id": "adam",
+    "title": "Adam: A Method for Stochastic Optimization",
+    "authors": "Diederik P. Kingma, Jimmy Ba",
+    "year": 2014,
+    "venue": "ICLR 2015 (arXiv 2014)",
+    "arxiv_id": "1412.6980",
+    "pdf_url": "https://arxiv.org/pdf/1412.6980",
+    "filename": "kingma-ba-2014-adam.pdf",
+    "course_mention": "Section « L'optimiseur Adam et ses deux mémoires » (Équation 6) : les deux moments (momentum et variance) et leurs hyperparamètres β1, β2.",
+    "highlights": [
+      {
+        "course_section": "Equation 6 - L'optimiseur Adam et ses deux memoires",
+        "search_text": [
+          "Adam, a method for efficient stochastic optimization",
+          "estimates of lower-order moments",
+          "AdaGrad"
+        ],
+        "course_excerpt": "COURS - Equation 6 (Adam) : m_t = beta1*m_{t-1} + (1-beta1)*g_t ; v_t = beta2*v_{t-1} + (1-beta2)*g_t^2 ; theta_{t+1} = theta_t - alpha * mchapo_t / (sqrt(vchapo_t) + epsilon). Kingma & Ba (2014) introduisent Adam, qui combine une estime du moment d'ordre 1 (la moyenne des gradients, le momentum) et du moment d'ordre 2 (la variance non centree), reprises ici pour discuter le changement de beta1 et beta2 entre GAN classique et WGAN-GP."
+      }
+    ]
+  },
+  {
+    "id": "improved-gan-techniques",
+    "title": "Improved Techniques for Training GANs",
+    "authors": "Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen",
+    "year": 2016,
+    "venue": "NeurIPS 2016",
+    "arxiv_id": "1606.03498",
+    "pdf_url": "https://arxiv.org/pdf/1606.03498",
+    "filename": "salimans-et-al-2016-improved-gan.pdf",
+    "course_mention": "Section « Pourquoi le WGAN-GP a détrôné le GAN classique », point 3, et section « Pour aller plus loin » : mode collapse, feature matching, minibatch discrimination.",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le WGAN-GP a detrone le GAN classique (3. Le mode collapse rendu moins probable)",
+        "search_text": [
+          "feature matching",
+          "minibatch discrimination",
+          "mode collapse"
+        ],
+        "course_excerpt": "COURS - Le mode collapse rendu moins probable : Salimans et al. (Improved Techniques for Training GANs, NeurIPS 2016) documentent le mode collapse dans le GAN classique - le Generateur decouvre une poignee de courbes qui trompent systematiquement le Discriminateur et cesse d'explorer le reste de la distribution - et proposent des correctifs (feature matching, minibatch discrimination) pour ce probleme, que le gradient plus riche du WGAN-GP attenue structurellement."
+      }
+    ]
+  },
+  {
+    "id": "renewable-gan",
+    "title": "Model-Free Renewable Scenario Generation Using Generative Adversarial Networks",
+    "authors": "Yize Chen, Yishen Wang, Daniel Kirschen, Baosen Zhang",
+    "year": 2018,
+    "venue": "IEEE Transactions on Power Systems",
+    "arxiv_id": "1707.09676",
+    "pdf_url": "https://arxiv.org/pdf/1707.09676",
+    "filename": "chen-et-al-2018-renewable-gan.pdf",
+    "course_mention": "Section « Pourquoi le WGAN-GP a détrôné le GAN classique », point 1, et section « Pour aller plus loin » : application du GAN à la génération de scénarios de production éolienne et solaire.",
+    "highlights": [
+      {
+        "course_section": "Pourquoi le WGAN-GP a detrone le GAN classique (1. Un gradient qui ne s'annule jamais)",
+        "search_text": [
+          "renewable scenario",
+          "Generative Adversarial Networks",
+          "wind and solar"
+        ],
+        "course_excerpt": "COURS - Un gradient qui ne s'annule jamais : les GAN de scenarios renouvelables (Chen et al. 2018) produisaient deja des courbes synthetiques de production eolienne ou solaire realistes, mais avec les memes risques d'instabilite (vanishing gradient, mode collapse) que tout GAN classique fonde sur la divergence de Jensen-Shannon."
+      }
+    ]
+  }
+]

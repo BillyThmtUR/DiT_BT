@@ -1,0 +1,268 @@
+<header class="hero fade">
+    <div class="wrap">
+        <div class="kicker">Une fable pour comprendre le WGAN-GP</div>
+        <h1>Le Faussaire<br>et l'Arpenteur</h1>
+        <div class="sub">Comprendre comment deux réseaux rivaux apprennent, ensemble, à fabriquer une journée de consommation électrique crédible</div>
+        <div class="legend"> <span><i class="dot" style="background:var(--sig)"></i>Signal : la donnée</span>
+            <span><i class="dot" style="background:var(--noise)"></i>Bruit : l'aléa</span> <span><i class="dot"
+                    style="background:var(--time)"></i>Générateur : le Faussaire</span> <span><i class="dot"
+                    style="background:var(--model)"></i>Critique : le Juge</span>
+        </div>
+    </div>
+</header>
+<main class="wrap"> <!-- PROLOGUE -->
+    <section class="chap"><span class="num">PROLOGUE</span>
+        <h2>Le royaume qui respire</h2>
+    </section>
+    <p class="lead">Dans le même royaume de <strong>Réseau</strong>, qui couvrait toute l'Île-de-France, les scribes
+        dessinaient chaque jour une courbe de 48 points, une toutes les demi-heures&nbsp;: le souffle électrique du
+        royaume, creux à 4&nbsp;h du matin, puissant à 19&nbsp;h, capable d'engloutir <span class="v sig">13&nbsp;325&nbsp;kWh</span>
+        en une seule demi-heure. Appelons l'ensemble de ces courbes vraies <span class="v sig">P_data</span>&nbsp;: la
+        vérité du royaume, sa distribution réelle — inconnue de quiconque dans son ensemble, mais dont chaque scribe
+        détenait un fragment.</p>
+    <p>Cette fois, le royaume ne chercha pas un devin solitaire capable d'apprendre seul, à force d'effacer puis
+        de restaurer une journée. Il organisa plutôt un <strong>duel</strong>&nbsp;: d'un côté un faussaire, de
+        l'autre un juge, condamnés à s'affronter jusqu'à ce que l'un des deux devienne indiscernable de la vérité.</p>
+    <blockquote>« Pour apprendre à imiter la réalité, il suffit parfois d'un adversaire qui refuse de se laisser
+        tromper. »</blockquote> <!-- CH 1 : NAISSANCE DES RIVAUX -->
+    <section class="chap"><span class="num">CHAPITRE I : LA NAISSANCE DES RIVAUX</span>
+        <h2>Le Faussaire et le Juge</h2>
+    </section>
+    <p class="lead">On façonna deux créatures. La première, <span class="v tim">G_θ</span>, le
+        <strong>Faussaire</strong>&nbsp;: on lui donnait une poignée de <span class="v noise">brume</span> — un
+        vecteur de bruit pur <span class="v noise">z ~ 𝒩(0, I)</span> — et il devait, d'un seul geste, la
+        transformer en une courbe de consommation. La seconde, <span class="v mod">D_ϕ</span>, le
+        <strong>Juge</strong>&nbsp;: on lui présentait une courbe, vraie ou fausse, et il devait rendre un verdict,
+        un nombre entre 0 et 1&nbsp;: la probabilité que la courbe soit authentique.</p>
+    <div class="card t">
+        <div class="sym">G_θ</div>
+        <div>
+            <h4>G_θ : le Faussaire (le Générateur)</h4>
+            <p>Transforme un bruit latent <span class="v noise">z</span> en une courbe artificielle <span class="v sig">x</span>. Ses poids <span class="v tim">θ</span> sont, à sa naissance, tirés au hasard&nbsp;: ses premières
+                œuvres ne sont que gribouillis.</p>
+        </div>
+    </div>
+    <div class="card m">
+        <div class="sym">D_ϕ</div>
+        <div>
+            <h4>D_ϕ : le Juge (le Discriminateur)</h4>
+            <p>Associe à toute courbe <span class="v sig">x</span> une probabilité d'être vraie. Ses poids <span class="v mod">ϕ</span> définissent l'acuité de son regard.</p>
+        </div>
+    </div>
+    <p>Le Faussaire ne voyait jamais les vraies courbes du royaume. Sa seule information venait du verdict du
+        Juge sur ses propres créations. Toute la ruse de l'un devait naître du seul reflet que lui tendait
+        l'autre.</p> <!-- CH 2 : LE JEU -->
+    <section class="chap"><span class="num">CHAPITRE II : LE JEU À SOMME NULLE</span>
+        <h2>Une seule formule pour deux ambitions</h2>
+    </section>
+    <p>Le royaume résuma le duel en une seule loi, que le Juge cherchait à <strong>maximiser</strong> et le
+        Faussaire à <strong>minimiser</strong>&nbsp;:</p>
+    <div class="eq"> <span class="cap">Équation 1 · l'objectif minimax</span>
+        min<sub>G</sub> max<sub>D</sub> <b class="mod">L</b> = 𝔼<sub>x~P_data</sub>[log <b class="mod">D</b>(<b class="sig">x</b>)] + 𝔼<sub>z~P_z</sub>[log(1 − <b class="mod">D</b>(<b class="tim">G</b>(<b class="noise">z</b>)))]
+    </div>
+    <p>Le premier terme récompensait le Juge chaque fois qu'il reconnaissait une vraie courbe (\(D(x)\) proche de
+        1). Le second le récompensait chaque fois qu'il démasquait un faux (\(D(G(z))\) proche de 0) — et c'est
+        précisément ce terme que le Faussaire voulait retourner à son avantage, en poussant \(D(G(z))\) vers 1.</p>
+    <p>Les sages du royaume démontrèrent qu'à l'équilibre parfait, si le Faussaire apprenait à reproduire
+        exactement <span class="v sig">P_data</span>, le Juge se retrouverait à <span class="v mod">D* = 1/2</span>
+        partout&nbsp;: incapable de faire mieux que pile ou face. Un bel équilibre théorique — mais qui, comme la
+        suite le montre, se révéla très difficile à atteindre en pratique.</p> <!-- CH 3 : LE MUR -->
+    <section class="chap"><span class="num">CHAPITRE III : LE MUR DE BRUME</span>
+        <h2>Quand le Juge devient trop bon, trop vite</h2>
+    </section>
+    <p class="lead">Au tout début de l'entraînement, le Faussaire ne savait produire que du bruit blanc,
+        des zigzags sans queue ni tête. Ses gribouillis et les vraies courbes du royaume vivaient dans deux mondes
+        totalement disjoints. Le Juge, lui, apprit en quelques instants à les distinguer avec une assurance de
+        99,9&nbsp;%.</p>
+    <p>Et c'est là que le piège se referma. La loi mathématique du duel — on le démontra plus tard — équivalait,
+        à l'équilibre du Juge, à une distance entre les deux mondes appelée la
+        <strong>divergence de Jensen-Shannon</strong>. Tant que les deux mondes ne se touchaient pas, cette
+        distance restait bloquée à sa valeur maximale, <span class="v noise">log 2</span>, quel que soit l'effort du
+        Faussaire pour s'améliorer un peu. La pente était plate. Le gradient, nul.</p>
+    <div class="card n">
+        <div class="sym">log 2</div>
+        <div>
+            <h4>La divergence de Jensen-Shannon au plafond</h4>
+            <p>Quand deux mondes ne se recouvrent pas du tout, la JSD entre eux vaut sa valeur maximale et n'indique
+                plus aucune direction d'amélioration&nbsp;: c'est le <em>vanishing gradient</em>.</p>
+        </div>
+    </div>
+    <blockquote>« Le Faussaire se tenait dans le noir complet, demandant "est-ce que je m'approche ?", et le Juge ne
+        répondait jamais que "tu es ailleurs" — sans jamais dire de quel côté se trouvait la vérité. »</blockquote>
+    <p>Des générations entières de faussaires s'effondrèrent ainsi, leurs poids gelés par un mur invisible. Il
+        fallait changer de règle du jeu.</p> <!-- CH 4 : L'ARPENTEUR -->
+    <section class="chap"><span class="num">CHAPITRE IV : L'ARPENTEUR</span>
+        <h2>Mesurer la distance, même dans le noir</h2>
+    </section>
+    <p class="lead">Trois voyageurs venus d'ailleurs — qu'on surnomma par la suite Arjovsky, Chintala et Bottou —
+        proposèrent de remplacer le Juge binaire par un <strong>Arpenteur</strong>. Plutôt que de dire « vrai » ou
+        « faux », l'Arpenteur mesurait <em>l'effort</em> nécessaire pour transformer un tas de terre (les courbes
+        générées) en un autre tas (les courbes réelles).</p>
+    <div class="eq"> <span class="cap">Équation 2 · la distance de Wasserstein (Earth Mover's Distance)</span>
+        W(p, q) = inf<sub>γ∈Π(p,q)</sub> 𝔼<sub>(x,y)~γ</sub>[ ‖x − y‖ ]
+    </div>
+    <p>Si le Faussaire plaçait son pic de consommation à 14&nbsp;h alors que le vrai pic culminait à 19&nbsp;h,
+        l'Arpenteur ne se contentait pas de dire « c'est faux »&nbsp;: il chiffrait précisément l'effort de pousser ce
+        pic de cinq heures vers la droite. Cet effort ne tombait <strong>jamais à zéro</strong>, même quand les deux
+        mondes ne se touchaient pas encore. Le Faussaire recevait enfin une direction, à chaque étape.</p>
+    <div class="card s">
+        <div class="sym">W</div>
+        <div>
+            <h4>W : la distance de Wasserstein</h4>
+            <p>Le coût minimal pour transporter toute la masse d'une distribution vers une autre. Contrairement à la
+                divergence de Jensen-Shannon, elle reste mesurable même quand les deux distributions ne se
+                chevauchent pas.</p>
+        </div>
+    </div> <!-- CH 5 : LE SERMENT DU CRITIQUE -->
+    <section class="chap"><span class="num">CHAPITRE V : LE SERMENT DU CRITIQUE</span>
+        <h2>De l'infimum au supremum</h2>
+    </section>
+    <p>Calculer directement l'effort minimal de l'Arpenteur, pour chaque plan de transport possible, aurait
+        englouti toute la puissance de calcul du royaume. Les sages trouvèrent un raccourci&nbsp;: la
+        <strong>dualité de Kantorovich-Rubinstein</strong>, qui change un problème de minimisation en un problème de
+        maximisation.</p>
+    <div class="eq"> <span class="cap">Équation 3 · la dualité de Kantorovich-Rubinstein</span>
+        W(p, q) = sup<sub>‖f‖_L≤1</sub> 𝔼<sub>x~p</sub>[<b class="mod">f</b>(x)] − 𝔼<sub>x~q</sub>[<b class="mod">f</b>(x)]
+    </div>
+    <p>L'Arpenteur devint ainsi le <span class="v mod">Critique</span> <span class="v mod">f_w</span>&nbsp;: non
+        plus un juge qui vote « vrai » ou « faux », mais un évaluateur qui attribue une <strong>note</strong>, un
+        simple nombre réel, d'autant plus élevée que la courbe lui semble authentique.</p>
+    <p>Mais un évaluateur livré à lui-même trichait&nbsp;: il aurait donné +∞ aux vraies courbes et −∞ aux fausses,
+        et ses propres gradients auraient explosé. On lui imposa donc un <strong>serment</strong>, la contrainte de
+        <em>1-Lipschitz</em>&nbsp;: sa note ne pouvait jamais varier plus vite que la distance entre deux courbes. Une
+        limite de vitesse, en somme — la pente de son jugement ne devait jamais dépasser 45°.</p>
+    <div class="note">
+        <b>‖f‖_L ≤ 1 —</b> la contrainte de Lipschitz. |f(x) − f(y)| ≤ ‖x − y‖ pour toute paire de courbes x, y&nbsp;:
+        le Critique doit noter avec mesure, jamais par à-coups.
+    </div>
+    <p>Dans la première version du serment, on faisait respecter cette limite très grossièrement&nbsp;: après
+        chaque leçon, on <strong>rognait</strong> de force les poids du Critique dans une fourchette étroite
+        (<span class="v mod">w ← clip(w, −0.01, 0.01)</span>). Le Critique en ressortait engourdi, incapable de
+        nuances&nbsp;: rabougri à des jugements presque linéaires.</p> <!-- CH 6 : LA PENALITE -->
+    <section class="chap"><span class="num">CHAPITRE VI : LA PÉNALITÉ, PAS LE CARCAN</span>
+        <h2>Gulrajani et la pénitence douce</h2>
+    </section>
+    <p class="lead">D'autres voyageurs, Gulrajani et ses compagnons, jugèrent le rognage des poids trop brutal.
+        Une fonction respecte le serment de Lipschitz si et seulement si la pente de son jugement — son gradient —
+        ne dépasse jamais 1, <em>en tout point</em>. Alors pourquoi ne pas simplement <strong>punir</strong> le
+        Critique chaque fois qu'il dépasse cette limite, plutôt que de lui couper les ailes en permanence&nbsp;?</p>
+    <div class="eq"> <span class="cap">Équation 4 · la perte WGAN-GP</span>
+        <b class="mod">L</b> = 𝔼<sub>x~P_data</sub>[<b class="mod">f_w</b>(x)] − 𝔼<sub>x̃~P_g</sub>[<b class="mod">f_w</b>(x̃)] + λ · 𝔼<sub>x̂~P_x̂</sub>[ (‖∇<sub>x̂</sub><b class="mod">f_w</b>(x̂)‖₂ − 1)² ]
+    </div>
+    <p>Le troisième terme, la <strong>pénalité de gradient</strong>, ne vaut zéro que si la pente du Critique vaut
+        exactement 1 au point examiné <span class="v mod">x̂</span> — un point tiré au hasard sur la ligne droite
+        entre une vraie courbe et une fausse. Trop plate ou trop raide, la pente coûte cher au Critique&nbsp;: il
+        apprend ainsi, de lui-même, à respecter le serment sans jamais qu'on lui rogne les poids.</p>
+    <div class="card m">
+        <div class="sym">λ</div>
+        <div>
+            <h4>λ : le poids de la pénitence</h4>
+            <p>Fixé à 10 dans l'article fondateur. Trop faible, le serment n'est plus respecté&nbsp;; trop fort, le
+                Critique redevient rigide et incapable de finesse.</p>
+        </div>
+    </div>
+    <p>Un bénéfice inattendu accompagnait cette réforme&nbsp;: la note moyenne que rendait désormais le Critique
+        n'était plus un simple verdict, mais une véritable <strong>estimation de la distance</strong> qui séparait
+        encore le royaume des faussaires de la vérité. Cette note décroissait presque toujours, régulièrement, à
+        mesure que le Faussaire s'améliorait — un luxe qu'aucun Juge binaire n'avait jamais pu offrir : dans
+        l'ancien monde, la loss du Juge pouvait rester parfaitement stable alors même que le Faussaire s'effondrait
+        en ne produisant plus qu'une poignée de courbes répétitives, un piège que l'on appelait le
+        <em>mode collapse</em>.</p> <!-- CH 7 : L'ENTRAINEMENT -->
+    <section class="chap"><span class="num">CHAPITRE VII : L'ENTRAÎNEMENT ACHARNÉ</span>
+        <h2>Dix leçons du Critique pour une leçon du Faussaire</h2>
+    </section>
+    <p>Pour que sa note reste fiable à chaque instant, le Critique devait rester en permanence à jour, en
+        avance sur le Faussaire. Le royaume décida donc de le faire travailler <span class="v mod">N_critic</span>
+        fois pour chaque leçon donnée au Faussaire — cinq fois selon l'usage, jusqu'à dix fois dans les
+        entraînements les plus poussés. Ainsi le Critique « collait » toujours de très près à la vérité du moment,
+        et le Faussaire ne recevait jamais d'instruction fondée sur un jugement bâclé.</p>
+    <div class="card t">
+        <div class="sym">N_critic</div>
+        <div>
+            <h4>N_critic : le nombre de leçons du Critique</h4>
+            <p>Le Critique s'entraîne plusieurs fois (5, parfois 10) pour chaque mise à jour du Faussaire, afin de
+                fournir une mesure de distance fiable et d'éviter les sauts brusques du Générateur.</p>
+        </div>
+    </div>
+    <p>Restait à régler l'horloge intérieure de l'apprentissage&nbsp;: l'optimiseur <span class="v mod">Adam</span>,
+        qui décide de l'ampleur de chaque pas. Il conserve deux mémoires&nbsp;: une <em>vitesse</em>
+        <span class="v tim">m_t</span>, l'inertie des directions passées, et une <em>friction</em>
+        <span class="v mod">v_t</span>, qui repère si la pente est douce ou abrupte.</p>
+    <div class="eq"> <span class="cap">Équation 5 · les deux mémoires d'Adam</span>
+        <b class="tim">m_t</b> = β₁·<b class="tim">m_{t−1}</b> + (1−β₁)·g_t &nbsp;&nbsp;|&nbsp;&nbsp; <b class="mod">v_t</b> = β₂·<b class="mod">v_{t−1}</b> + (1−β₂)·g_t²
+    </div>
+    <p>Dans l'ancien duel, on laissait à l'inertie une large place (<span class="v tim">β₁ = 0.5</span>) et à la
+        mémoire de la friction une place plus large encore (<span class="v mod">β₂ = 0.999</span>). Mais un Critique
+        sollicité dix fois par leçon ne pouvait plus se permettre une telle inertie&nbsp;: on annula presque
+        entièrement la vitesse (<span class="v tim">β₁ = 0</span>), pour qu'il réagisse instantanément, sans
+        traîner les habitudes de ses leçons précédentes ; et l'on raccourcit la mémoire de la friction
+        (<span class="v mod">β₂ = 0.9</span>), pour que son pas s'adapte aussitôt aux nouvelles courbures du
+        terrain — une condition indispensable pour tenir, leçon après leçon, le serment de Lipschitz.</p>
+    <blockquote>« Le Faussaire n'avait plus le droit à l'hésitation de la mémoire longue. Chaque leçon devait compter
+        pour elle-même. »</blockquote> <!-- EPILOGUE -->
+    <section class="chap"><span class="num">ÉPILOGUE</span>
+        <h2>Le casting au complet</h2>
+    </section>
+    <p>Toutes les variables de notre fable, réunies pour le salut final&nbsp;:</p>
+    <div class="gloss">
+        <div class="row s">
+            <div class="sym">x</div>
+            <div class="def"><b>La courbe.</b> Une donnée de consommation, réelle ou générée&nbsp;: 48 demi-heures
+                normalisées.</div>
+        </div>
+        <div class="row s">
+            <div class="sym">P_data</div>
+            <div class="def"><b>La vérité du royaume.</b> La distribution réelle, inconnue, des courbes RTE.</div>
+        </div>
+        <div class="row n">
+            <div class="sym">z</div>
+            <div class="def"><b>La brume.</b> Bruit latent gaussien 𝒩(0, I) fourni au Faussaire.</div>
+        </div>
+        <div class="row t">
+            <div class="sym">G_θ</div>
+            <div class="def"><b>Le Faussaire.</b> Le Générateur, qui transforme <span class="v noise">z</span> en une
+                courbe artificielle.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">D_ϕ</div>
+            <div class="def"><b>Le Juge.</b> Le Discriminateur classique, qui rend une probabilité entre 0 et 1.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">f_w</div>
+            <div class="def"><b>Le Critique.</b> L'évaluateur du WGAN-GP, qui rend un score réel non borné.</div>
+        </div>
+        <div class="row n">
+            <div class="sym">log 2</div>
+            <div class="def"><b>Le mur.</b> Valeur maximale de la JSD quand deux mondes ne se chevauchent pas&nbsp;:
+                le gradient s'y annule.</div>
+        </div>
+        <div class="row s">
+            <div class="sym">W</div>
+            <div class="def"><b>L'Arpenteur.</b> La distance de Wasserstein, mesurable même sans recouvrement.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">‖f‖_L≤1</div>
+            <div class="def"><b>Le serment.</b> La contrainte de Lipschitz&nbsp;: la pente du Critique ne dépasse
+                jamais 1.</div>
+        </div>
+        <div class="row m">
+            <div class="sym">λ</div>
+            <div class="def"><b>La pénitence.</b> Le poids de la pénalité de gradient (λ = 10).</div>
+        </div>
+        <div class="row t">
+            <div class="sym">N_critic</div>
+            <div class="def"><b>Les leçons du Critique.</b> Nombre de mises à jour du Critique par mise à jour du
+                Faussaire (5, parfois 10).</div>
+        </div>
+        <div class="row t">
+            <div class="sym">β₁ β₂</div>
+            <div class="def"><b>Les deux mémoires d'Adam.</b> Vitesse et friction du pas d'apprentissage&nbsp;:
+                (0, 0.9) en WGAN-GP contre (0.5, 0.999) en GAN classique.</div>
+        </div>
+    </div>
+    <hr class="soft">
+    <p style="text-align:center;font-family:var(--display);font-style:italic;font-size:21px;color:var(--ink-soft)">Et
+        c'est ainsi que, leçon après leçon, le Faussaire apprit à peindre des journées si plausibles que même
+        l'Arpenteur, le plus rigoureux des juges, ne trouvait presque plus rien à leur reprocher.</p>
+</main>
+<footer>FIN · une fable pour comprendre le WGAN-GP</footer>
